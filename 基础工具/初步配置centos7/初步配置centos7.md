@@ -17,3 +17,11 @@ export PS1='[\u@\h]\w\$'
 | \v | BASH的版本信息 | \\# | 下达的第几个命令 |
 | \\! | 命令行动态统计历史命令次数 |||
 | [ | 字符“[” | ] | 字符“]” |
+
+# 安装EPEL源
+
+EPEL（Extra Packages for Enterprise Linux）是由Fedora社区打造，为RHEL及衍生发行版如CentOS等提供高质量软件包的项目，里面包含了许多基本源里没有的软件源，比如`cmake3，golang，docker-compose，nginx`等等。安装命令如下：
+
+```sh
+sudo yum install -y epel-release
+```
