@@ -1,4 +1,4 @@
-# CentOS
+# CentOS简介
 
 ![centos-logo](centos-logo.jpg)
 
