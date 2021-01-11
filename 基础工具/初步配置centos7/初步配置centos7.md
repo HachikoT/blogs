@@ -20,8 +20,24 @@ export PS1='[\u@\h]\w\$'
 
 # 安装EPEL源
 
-EPEL（Extra Packages for Enterprise Linux）是由Fedora社区打造，为RHEL及衍生发行版如CentOS等提供高质量软件包的项目，里面包含了许多基本源里没有的软件源，比如`cmake3，golang，docker-compose，nginx`等等。安装命令如下：
+EPEL（Extra Packages for Enterprise Linux）是由Fedora社区打造，为RHEL及衍生发行版如CentOS等提供高质量软件包的项目，里面包含了许多基本源里没有的软件源，比如`cmake3，golang，docker-compose`等等。安装命令如下：
 
 ```sh
 sudo yum install -y epel-release
+```
+
+# 安装常用软件
+
+- man手册：安装centos7之后，man一些C库函数和pthread函数都查找不到，也就是man手册不全，这时需要安装`man-pages`，`sudo yum install -y man-pages`
+- 命令行自动补全功能：在终端界面需要使用`tab`键来进行命令的自动补全，需要安装`sudo yum install -y bash-completion`
+- c/c++环境：`sudo yum install -y gcc gcc-c++ gdb`
+- make/cmake：`sudo yum install -y make cmake3`
+- git/wget/curl：`sudo yum install -y git wget curl`
+- 压缩/解压缩：`sudo yum install -y zip unzip bzip2`
+- tree/jq：`sudo yum install -y tree jq`
+
+安装全部：
+
+```sh
+sudo yum install -y man-pages bash-completion gcc gcc-c++ gdb make cmake3 git wget curl zip unzip bzip2 tree jq
 ```
