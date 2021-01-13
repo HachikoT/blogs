@@ -50,9 +50,24 @@ linux操作系统由内核空间和用户空间组成，内核空间是kernel，
 虽然容器相比虚拟机轻量许多，但也给运行于其中的应用带来了一些局限性。虚拟机没有这些局限性，因为每个虚拟机都运行自己的内核。
 还不仅是内核的问题。一个在特定硬件架构之上编译的容器化应用，只能在有相同硬件架构的机器上运行。不能将一个x86架构编译的应用容器化后，又期望它能运行在ARM架构的机器上。你仍然需要一台虚拟机来做这件事情。
 
+# docker images
+
+`docker images`显示本地的镜像：
+
+```sh
+docker images [OPTIONS] [REPOSITORY[:TAG]]
+```
+
+选项说明：
+
+- **-f**：设置过滤条件
+    - dangling：显示没有打tag的镜像（none镜像）。
+    - `docker images | grep $name | awk '{print $3}'`：显示特定名字的镜像ID。
+- **-q**：只显示镜像ID。
+
 # docker run
 
-`docker run`其实相当于`docker create`+`docker start`，可以直接从镜像启动一个新的容器。
+`docker run`其实相当于`docker create`+`docker start`，可以直接从镜像启动一个新的容器：
 
 ```sh
 docker run [OPTIONS] IMAGE[:TAG|@DIGEST] [COMMAND] [ARG...]
@@ -60,9 +75,43 @@ docker run [OPTIONS] IMAGE[:TAG|@DIGEST] [COMMAND] [ARG...]
 
 选项说明：
 
-- **-i：**交互模式，开启STDIN
-- **-t：**分配一个伪终端，一般连用`-it`，如果用`bash`命令启动的容器，可以用`Ctrl+P+Q`来退出，这样可以保证容器不停止运行。
-- **-d：**后台运行，如果用`bash`命令启动的容器，可以加上`-it`来保证容器不停止运行。
+- **-i**：交互模式，开启STDIN。
+- **-t**：分配一个伪终端，一般连用`-it`，如果用`bash`命令启动的容器，可以用`Ctrl+P+Q`来退出，这样可以保证容器不停止运行。
+- **-d**：后台运行，如果用`bash`命令启动的容器，可以加上`-it`来保证容器不停止运行。
+- **--rm**：当容器停止运行后自动删除容器。
+- **--name**：指定容器名。
+- **--restart**：设置容器的重启策略
+    - no：默认策略，在容器退出时不重启容器。
+    - on-failure：在容器非正常退出时（退出状态非0），才会重启容器。
+    - on-failure:3：在容器非正常退出时重启容器，最多重启3次。
+    - always：在容器退出时总是重启容器（docker服务重启时也会自动重启处于exited状态的容器）。
+    - unless-stopped：在容器退出时总是重启容器，但是不考虑在Docker守护进程启动时就已经停止了的容器。
+- **--user**：设置容器中执行命令的用户id和群组id（容器共享宿主机中的用户id和群组id）
+- **--network**：设置容器网络
+    - bridge：默认的网络,此模式会为每一个容器分配、设置IP等，并将容器连接到一个docker0虚拟网桥，通过docker0网桥以及Iptables nat表配置与宿主机通信。docker0网桥的地址固定为`172.17.0.1`。
+    - none：关闭网络功能。
+    - container:(name|id)：和指定的容器共享同一个network namespace。
+    - host：共享宿主机的network namespace。
+    - (network-name)|(network-id)：用户自定义的网络，如果网络类型也是bridge的话，和docker0不通，该网络内的容器可以用容器名互相通信，也就是自带域名解析。
+- **-p**：将容器内的端口映射到指定的宿主机端口，格式为：主机(宿主)端口:容器端口。
+- **-P**：随机端口映射，容器内部端口随机映射到主机的端口。
+- **-v**：绑定一个卷，格式为：主机（宿主）目录:容器目录。
+
+# docker ps
+
+`docker ps`显示当前正在运行的容器：
+
+```sh
+docker ps [OPTIONS]
+```
+
+选项说明：
+
+- **-a**：显示所有的容器，包括exited，created等状态的容器。
+- **-f**：设置过滤条件
+    - name：显示特定名字的容器。
+    - status：显示指定状态的容器，一般用exited状态表示停止运行的容器。
+- **-q**：只显示容器ID。
 
 # 参考
 
