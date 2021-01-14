@@ -14,3 +14,191 @@ docker-compose [-f <arg>...] [options] [--] [COMMAND] [ARGS...]
 
 - **-f**：指定docker-compose模板文件，默认为docker-compose.yml。
 - **-p**：指定项目名称，默认使用当前所在目录为项目名。
+
+`docker-compose up`创建和开启容器、网络、卷、镜像：
+
+```sh
+up [options] [--scale SERVICE=NUM...] [--] [SERVICE...]
+```
+
+选项说明：
+
+- **-d**：在后台运行服务容器。
+
+`docker-compose down`停止和删除容器、网络、卷、镜像：
+
+```sh
+down [options]
+```
+
+# docker-compose.yaml模板文件
+
+docker-compose允许用户通过一个docker-compose.yml模板文件来定义一组相关联的应用容器为一个项目（project）。docker-compose标准模板文件应该包含version、services、networks三大部分，最关键的是services和networks两个部分。
+
+- **version**：
+
+docker-compose目前有三个版本分别为version 1，version 2，version 3，表示支持的功能版本，一般可以写为version 3：
+
+```yaml
+version: '3'
+```
+
+- **image**：
+
+指定服务的镜像名称或镜像ID。如果镜像在本地不存在，docker-compose将会尝试拉取镜像。
+
+```yaml
+version: '3'
+services: 
+  app: 
+    image: centos:7
+```
+
+- **container_name**：
+
+指定容器名。
+
+```yaml
+version: '3'
+services: 
+  app: 
+    image: centos:7
+    container_name: test
+```
+
+- **stdin_open**：
+
+打开stdin，和`docker run -i`一样。
+
+```yaml
+version: '3'
+services: 
+  app: 
+    image: centos:7
+    container_name: test
+    stdin_open: true
+```
+
+- **tty**：
+
+分配一个伪终端，和`docker run -t`一样。
+
+```yaml
+version: '3'
+services: 
+  app: 
+    image: centos:7
+    container_name: test
+    stdin_open: true
+    tty: true
+```
+
+- **working_dir**：
+
+设置工作目录。
+
+```yaml
+version: '3'
+services: 
+  app: 
+    image: centos:7
+    container_name: test
+    stdin_open: true
+    tty: true
+    working_dir: /
+```
+
+- **ports**：
+
+指定端口映射，使用HOST:CONTAINER格式或者只是指定容器的端口，宿主机会随机映射端口。
+
+```yaml
+version: '3'
+services: 
+  app: 
+    image: centos:7
+    container_name: test
+    stdin_open: true
+    tty: true
+    working_dir: /
+    ports: 
+    - "9000"
+    - "8080:8080"
+```
+
+- **volumes**：
+
+挂载一个目录或者一个已存在的数据卷容器，可以直接使用[HOST:CONTAINER]格式，或者使用[HOST:CONTAINER:ro]格式，后者对于容器来说，数据卷是只读的，可以有效保护宿主机的文件系统。
+
+```yaml
+version: '3'
+services: 
+  app: 
+    image: centos:7
+    container_name: test
+    stdin_open: true
+    tty: true
+    working_dir: /
+    ports: 
+    - "9000"
+    - "8080:8080"
+    volumes: 
+    - /home:/home
+```
+
+- **net**：
+
+设置网络模式。
+
+```yaml
+version: '3'
+services: 
+  app: 
+    image: centos:7
+    container_name: test
+    stdin_open: true
+    tty: true
+    working_dir: /
+    ports: 
+    - "9000"
+    - "8080:8080"
+    volumes: 
+    - /home:/home
+    net: bridge
+```
+
+- **command**：
+
+设置容器的执行命令。
+
+```yaml
+version: '3'
+services: 
+  app: 
+    image: centos:7
+    container_name: test
+    stdin_open: true
+    tty: true
+    working_dir: /
+    ports: 
+    - "9000"
+    - "8080:8080"
+    volumes: 
+    - /home:/home
+    net: bridge
+    commands: bash
+```
+
+- **depends_on**：
+
+设置服务的启动和关闭的依赖顺序。
+
+```yaml
+version: '3'
+services: 
+  app: 
+    image: centos:7
+    container_name: test
+  app2: 
+    depends_on: app
+```
