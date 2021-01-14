@@ -86,7 +86,7 @@ docker run [OPTIONS] IMAGE[:TAG|@DIGEST] [COMMAND] [ARG...]
     - on-failure:3：在容器非正常退出时重启容器，最多重启3次。
     - always：在容器退出时总是重启容器（docker服务重启时也会自动重启处于exited状态的容器）。
     - unless-stopped：在容器退出时总是重启容器，但是不考虑在Docker守护进程启动时就已经停止了的容器。
-- **--user**：设置容器中执行命令的用户id和群组id（容器共享宿主机中的用户id和群组id）
+- **--user**：设置容器中执行命令的用户id和群组id（容器共享宿主机中的用户id和群组id）。
 - **--network**：设置容器网络
     - bridge：默认的网络,此模式会为每一个容器分配、设置IP等，并将容器连接到一个docker0虚拟网桥，通过docker0网桥以及Iptables nat表配置与宿主机通信。docker0网桥的地址固定为`172.17.0.1`。
     - none：关闭网络功能。
@@ -112,6 +112,31 @@ docker ps [OPTIONS]
     - name：显示特定名字的容器。
     - status：显示指定状态的容器，一般用exited状态表示停止运行的容器。
 - **-q**：只显示容器ID。
+
+# docker rm
+
+`docker rm`删除容器：
+
+```sh
+docker rm [OPTIONS] CONTAINER [CONTAINER...]
+```
+
+选项说明：
+
+- **-f**：强制删除一个正在运行的容器。
+- `docker rm $(docker ps -q -f status=exited)`：删除停止运行的容器。
+
+# docker rmi
+
+`docker rmi`删除镜像：
+
+```sh
+docker rmi [OPTIONS] IMAGE [IMAGE...]
+```
+
+选项说明：
+
+- `docker rmi $(docker images | grep $name | awk '{print $3}')`：删除指定名字的镜像。
 
 # 参考
 
