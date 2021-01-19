@@ -204,3 +204,32 @@ services:
   app2: 
     depends_on: app
 ```
+
+- **extend**：
+
+基于已有的服务进行扩展。例如我们已经有了一个`webapp`服务，模板文件为`common.yml`。
+
+```yaml
+# common.yml
+webapp: 
+  build: ./webapp
+  environment:
+    - DEBUG=false
+    - SEND_EMAILS=false
+```
+
+编写一个新的`development.yml`文件，使用`common.yml`中的`webapp`服务进行扩展。
+
+```yaml
+# development.yml
+web: 
+  extends: 
+    file: common.yml
+    service: webapp
+  ports: 
+    - "8000:8000"
+  links: 
+    - db
+  environment: 
+    - DEBUG=true
+```
