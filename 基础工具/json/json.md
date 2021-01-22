@@ -79,6 +79,10 @@ e = e
 
 json并不支持注释，所以json来当配置文件的时候有点麻烦，但一般的json库都支持注释的语法。详见参考资料。
 
+# object中各key/value序列化之后的顺序问题
+
+有的实现中是用map来存放key/value，这样就导致序列化的时候是按照key的大小排序的，而不是按添加的顺序序列化的，需要注意。
+
 # 参考资料
 
 - json官方说明：[json.org](https://www.json.org/json-zh.html)
