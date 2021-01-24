@@ -125,3 +125,4 @@ Keccak-f [b]中的每一轮包含5 个步骤：$\theta$（西塔）、$\rho$（�
 
 - 图灵社区：[图解密码技术（第3版）](https://www.ituring.com.cn/book/miniarticle/217276)
 - stackoverflow提问：[Which cryptographic hash function does Ethereum use?](https://ethereum.stackexchange.com/questions/550/which-cryptographic-hash-function-does-ethereum-use)
+- 在线hash计算工具：[online-tools](http://emn178.github.io/online-tools/keccak_256.html)
