@@ -202,7 +202,8 @@ services:
     image: centos:7
     container_name: test
   app2: 
-    depends_on: app
+    depends_on: 
+      - app
 ```
 
 - **extend**：
