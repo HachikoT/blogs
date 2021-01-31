@@ -26,18 +26,22 @@ $$X^D\,mod\,N=Y$$
 $$Y^E\,mod\,N=X$$
 
 这里可以还原出加密的数据是因为
-$$\begin{align}
+$$
+\begin{aligned}
 (X^D)^E &\equiv X^{D\times E}\,mod\,N\\
 &\equiv X^{kM}X\,mod\,N\\
 &\equiv X^{k\varphi(N)}X\,mod\,N\\
 &\equiv X\,mod\,N\\
-\end{align}$$
+\end{aligned}
+$$
 上面的推导中利用了欧拉定理：$X^{\varphi(N)}\equiv 1\,mod\,N$，但这需要$X$与$N$互质
 当$X$不与$N$互质时，只可能$X=tP$或者$X=tQ$，这里推导$X=tP$的情况，这里有$tP$与$Q$一定是互质的
-$$\begin{align}
+$$
+\begin{aligned}
 (tP)^{DE} &\equiv (tP)^{k\varphi(P)\varphi(Q)}(tP)\,mod\,Q\\
 &\equiv tP\,mod\,Q\\
-\end{align}$$
+\end{aligned}
+$$
 推出
 $$(tP)^{DE}=t'Q+tP$$
 由于$P|t'Q$所以
