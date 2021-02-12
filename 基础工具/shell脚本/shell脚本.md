@@ -36,3 +36,40 @@ while getopts "a:bc" option; do
     esac
 done
 ```
+
+# 循环
+
+`for in`语法：
+
+```sh
+for n in $(seq 1 10); do
+    echo $n
+done
+```
+
+`while`循环，死循环：
+
+```sh
+while true; do
+    sleep 1
+    echo "hello"
+done
+```
+
+`while`循环，使用管道符：
+
+```sh
+cat test.txt | while read line; do
+    echo $line
+done
+```
+
+`while`循环，使用重定向：
+
+```sh
+while read line; do
+    echo $line
+done < test.txt
+```
+
+他们的区别就是使用管道符的方式是在子shell中运行，所以在循环内部定义的变量在循环体外是无效的。
