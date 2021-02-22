@@ -151,6 +151,73 @@ handlers是按照在handlers中定义个顺序执行的，而不是安装notify�
     debug: msg="define the 3nd handler"
 ```
 
+# 变量优先级
+
+下面是变量的优先级，由高到低：
+
+- extra vars：通过命令行穿进去的变量，例如`-e "user=my_user"`。
+- include params
+- role (and include_role) params
+- set_facts / registered vars
+- include_vars
+- task vars (only for the task)：在task中定义的变量。
+- block vars (only for tasks in block)
+- role vars (defined in role/vars/main.yml)
+- play vars_files
+- play vars_prompt
+- play vars
+- host facts / cached set_facts
+- playbook host_vars/*playbook group_vars/all
+- inventory host_vars/*
+- inventory file or script host vars
+- playbook group_vars/*
+- inventory group_vars/*
+- playbook group_vars/all
+- inventory group_vars/all
+- inventory file or script group vars
+- role defaults (defined in role/defaults/main.yml)
+- command line values (for example, -u my_user, these are not variables)
+
+# roles
+
+roles 用于层次性、结构化地组织playbook。
+在ansible中,通过遵循特定的目录结构,就可以实现对role的定义：
+
+```sh
+site.yml
+roles/
+├── myrole
+    ├── tasks
+    │   └── main.yml
+    ├── handlers
+    │   └── main.yml
+    ├── defaults
+    │   └── main.yml
+    ├── vars
+    │   └── main.yml
+    ├── files
+    ├── templates
+    ├── README.md
+    ├── meta
+    │   └── main.yml
+    └── tests
+        ├── inventory
+        └── test.yml
+```
+
+ansible并不要求role包含上述所有的目录及文件，根据role的功能需要加入对应的目录和文件。下面是每个目录和文件的功能：
+
+- 如果`roles/x/tasks/main.yml`存在, 其中列出的 tasks 将被添加到 play 中，所以这个文件也可以视作role的入口文件，想看role做了什么操作，可以从此文件看起。
+- 如果`roles/x/handlers/main.yml`存在, 其中列出的 handlers 将被添加到 play 中
+- 如果`roles/x/vars/main.yml`存在, 其中列出的 variables 将被添加到 play 中
+- 如果`roles/x/meta/main.yml`存在, 其中列出的 “角色依赖” 将被添加到 roles 列表中
+- `roles/x/tasks/main.yml`中所有tasks，可以引用`roles/x/{files,templates,tasks}`中的文件，不需要指明文件的路径。
+
+roles和tasks的执行顺序：
+
+- pre_tasks > role > tasks > post_tasks
+
+
 # 参考资料
 
 - [Ansible自动化运维教程](https://www.w3cschool.cn/automate_with_ansible/)
@@ -158,3 +225,4 @@ handlers是按照在handlers中定义个顺序执行的，而不是安装notify�
 - [ansible官方文档](https://docs.ansible.com/ansible/2.9/index.html)
 - [Ansible常用模块基本操作](https://www.cnblogs.com/vipygd/p/11625142.html)
 - [初窥Ansible playbook](https://www.cnblogs.com/vipygd/p/13034739.html)
+- [ansible官网变量优先级文档](https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#variable-precedence-where-should-i-put-a-variable)
