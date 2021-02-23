@@ -118,10 +118,10 @@ CentOS Linux从2020年12月以后不会再有CentOS Linux 9等之后的操作系
 
 ![install-centos-11](install-centos-11.png)
 
-手动配置ip地址（不用DHCP）：
+手动配置ip地址（不用DHCP，dns地址可以设置为8.8.8.8）：
 
 ![install-centos-12](install-centos-12.png)
 
-然后点击开始安装，在安装的时候设置root密码，创建新用户并成为管理员，这样可以使用sudo：
+然后点击开始安装，在安装的时候设置root密码，创建新用户并成为管理员，这样可以使用sudo（其实就是将用户添加到wheel组中）：
 
 ![install-centos-13](install-centos-13.png)
