@@ -178,6 +178,8 @@ handlers是按照在handlers中定义个顺序执行的，而不是安装notify�
 - role defaults (defined in role/defaults/main.yml)
 - command line values (for example, -u my_user, these are not variables)
 
+group_vars 存放的是组变量，group_vars/all.yml 表示所有主机有效，等同于[all:vars]，grous_vars/etcd.yml 表示etcd组主机有效，等同于[etcd:vars]。
+
 # roles
 
 roles 用于层次性、结构化地组织playbook。
