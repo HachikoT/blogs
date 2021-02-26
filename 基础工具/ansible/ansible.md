@@ -23,6 +23,7 @@ defaults配置（查看配置可以用ansible-config list命令）：
 | 配置项 | 说明 | 默认值 |
 | :---: | :---: | :---: |
 | inventory | ansible inventory文件路径 | /etc/ansible/hosts |
+| roles_path | ansible role存放路径 | /etc/ansible/roles |
 | remote_user | ansible执行远程登录用户 | 没有规定，一般是当前用户 |
 | ask_pass | 运行ansible是否提示输入密码 | false |
 | host_key_checking | ansible第一次连接客户端时是否要检查ssh密钥 | true |
