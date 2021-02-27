@@ -6,6 +6,15 @@
 sudo timedatectl set-timezone 'Asia/Shanghai'
 ```
 
+# ubuntu下vi方向键无法使用
+
+ubuntu（包括树莓派的系统）中vi在编辑状态下方向键不能用，还有回格键不能删除等我们平时习惯的一些键都不能使用。这是因为ubuntu预装的是vim tiny版本，这里需要切换为vim full版本：
+
+```sh
+sudo apt remove -y vim-common
+sudo apt install -y vim
+```
+
 # 参考资料
 
 - [如何调整Linux系统为正确时区](https://www.linuxprobe.com/linux-time.html)
