@@ -18,6 +18,18 @@ s := array[startIndex:endIndex]
 s := slice[startIndex:endIndex]
 ```
 
+endIndex可以为`len(s)`：
+
+```go
+func main() {
+	s := []int{1, 2, 3, 4}
+	// 截取出空切片
+	s2 := s[len(s):len(s)]
+	// panic: runtime error
+	s3 := s[len(s)+1:]
+}
+```
+
 nil切片和空切片：
 
 ```go
