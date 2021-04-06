@@ -138,6 +138,18 @@ docker rmi [OPTIONS] IMAGE [IMAGE...]
 
 - `docker rmi $(docker images | grep $name | awk '{print $3}')`：删除指定名字的镜像。
 
+# docker update
+
+更新容器的配置。
+
+```sh
+docker update [OPTIONS] CONTAINER [CONTAINER...]
+```
+
+选项说明：
+
+- **--restart**：重新设置容器的重启策略
+
 # 参考
 
 - docker官网引用：[docker reference](https://docs.docker.com/reference/)
