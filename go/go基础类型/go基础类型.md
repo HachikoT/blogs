@@ -106,6 +106,27 @@ type stringStruct struct {
 
 需要注意的是，`string`对象可以为空（长度为0），但不会是`nil`；
 
+# 短变量声明
+
+短变量声明中需要注意，在新的局部块中会优先创建新的变量，看下例：
+
+```go
+func main() {
+	test("rc")
+}
+
+func test(name string) {
+	{
+		name, ok := "rancheng", true
+		// 输出rancheng
+		fmt.Println(name, ok)
+	}
+	// 输出rc
+	fmt.Println(name)
+}
+
+```
+
 # 参考资料
 
 - [Go string 实现原理剖析](https://blog.csdn.net/weixin_33769207/article/details/91699678)
