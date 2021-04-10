@@ -20,6 +20,16 @@ screen -d yourname           # 远程detach某个session    # detach快捷键 ct
 screen -S yourname -X quit   # 删除叫yourname的session
 ```
 
+# top
+
+1.进入top界面之后可以按数字键`1`，这样可以展开每个CPU的运行情况：
+
+![top-1](top-1.png)
+
+2.进入top界面，可以按键`x`，这样会高亮作为排序基准的列，然后可以使用`shift + >`或者`shift + <`键来重新选择排序基准列：
+
+![top-x](top-x.png)
+
 
 # 参考资料
 
