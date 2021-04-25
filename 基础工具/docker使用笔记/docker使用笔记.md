@@ -137,6 +137,7 @@ docker rmi [OPTIONS] IMAGE [IMAGE...]
 选项说明：
 
 - `docker rmi $(docker images | grep $name | awk '{print $3}')`：删除指定名字的镜像。
+- `docker rmi $(docker images -f dangling=true -q)`：删除none镜像。
 
 # docker update
 
