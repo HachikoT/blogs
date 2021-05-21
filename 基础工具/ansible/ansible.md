@@ -62,6 +62,53 @@ ping无须任何参数。上述命令输出结果如下所示：
 }
 ```
 
+# 常用语法
+
+**ignore_errors**：ansible的playbook在执行任务出现错误的时候会停止运行，如果需要忽略错误继续运行可以用该语法：
+
+```yaml
+# 当没有docker服务的时候也不报错
+- name: stop docker service
+  systemd:
+    name: docker
+    daemon_reload: yes
+    state: stopped
+    enabled: yes
+  ignore_errors: true
+```
+
+**connection: local**：如果希望在控制主机本地运行一个特定的任务，可以使用local_action语句：
+
+```yaml
+# 等待被控端sshd端口开启
+- name: wait for ssh server to be running
+  wait_for
+      port: 22 
+      host: "{{ inventory_hostname }}" 
+      search_regex: OpenSSH
+  connection: local
+```
+
+**delegate_to**：可以使用delegate_to语句来在另一台主机上运行task，注意这里delegate_to不是只在指定的机器上执行一次任务，而是在指定机器上执行所有任务，比如上面的`connection: local`等价于`delegate_to: 127.0.0.1`：
+
+```yaml
+- name: enable alerts for web servers
+  hosts: webservers
+  tasks:
+    - name: enable alerts
+      nagios: action=enable_alerts service=web host="{{ inventory_hostname }}"
+      delegate_to: nagios.example.com
+```
+
+**run_once**：当有多台主机要执行任务时，那么只有一台机器会执行任务，可以和`delegate_to`搭配指定在哪台机器上执行任务：
+
+```yaml
+- name: run the task locally, only once
+  command: /opt/my-custom-command
+  run_once: true
+  delegate_to: app.a1-61-105.dev.unp
+```
+
 # playbook模式
 
 只有脚本才可以重用，避免总敲重复的代码。Ansible脚本的名字叫Playbook，使用的是YAML的格式。
@@ -229,3 +276,4 @@ roles和tasks的执行顺序：
 - [Ansible常用模块基本操作](https://www.cnblogs.com/vipygd/p/11625142.html)
 - [初窥Ansible playbook](https://www.cnblogs.com/vipygd/p/13034739.html)
 - [ansible官网变量优先级文档](https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#variable-precedence-where-should-i-put-a-variable)
+- [Ansible16：Playbook高级用法](https://www.cnblogs.com/breezey/p/10996651.html)
