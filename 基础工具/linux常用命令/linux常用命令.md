@@ -30,6 +30,11 @@ screen -S yourname -X quit   # 删除叫yourname的session
 
 ![top-x](top-x.png)
 
+# 查询出口ip
+
+```sh
+curl cip.cc
+```
 
 # 参考资料
 
