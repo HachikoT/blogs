@@ -36,6 +36,24 @@ screen -S yourname -X quit   # 删除叫yourname的session
 curl cip.cc
 ```
 
+# dd
+
+dd命令可以用来快速测试磁盘的读写速度：
+
+```sh
+dd if=/dev/zero of=tmp.txt bs=1024 count=1000000
+dd if=tmp.txt of=/dev/null bs=1024 count=1000000
+```
+
+# xargs
+
+xargs可以将标准输入转换为命令的参数去执行：
+
+```sh
+# 为所有文件添加后缀
+ls | xargs -n1 -i mv {} {}.j2
+```
+
 # 参考资料
 
 - [Linux--screen远程必备](https://blog.csdn.net/qq_34243930/article/details/106771285)
