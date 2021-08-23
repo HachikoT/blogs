@@ -44,6 +44,8 @@ sudo yum install -y docker-ce docker-ce-cli containerd.io
 
 - **设置国内镜像源：`sudo vi /etc/docker/daemon.json`**
 
+这里应该要等docker服务启动后才有`/etc/docker`目录，所以可以先启动docker服务，再来修改这个镜像源，然后重启docker服务
+
 ```json
 {
     "registry-mirrors": ["http://hub-mirror.c.163.com"]
@@ -57,7 +59,7 @@ sudo yum install -y docker-ce docker-ce-cli containerd.io
 sudo gpasswd -a ${USER} docker
 
 # 开机自启动Docker服务
-sudo systemctl enable docker.service
+sudo systemctl enable docker
 
 # 开启Docker服务
 sudo systemctl start docker
