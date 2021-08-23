@@ -54,6 +54,15 @@ xargs可以将标准输入转换为命令的参数去执行：
 ls | xargs -n1 -i mv {} {}.j2
 ```
 
+# uuidgen
+
+uuidgen用来生成uuid，形式为`xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx`，其中`M`表示uuid的版本，这里默认生成`uuid v4`：
+
+```sh
+$ uuidgen
+a8413894-dc2c-4acd-b98a-9fcde3f962ad
+```
+
 # 参考资料
 
 - [Linux--screen远程必备](https://blog.csdn.net/qq_34243930/article/details/106771285)
