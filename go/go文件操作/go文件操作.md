@@ -36,3 +36,12 @@ func main() {
 	}
 }
 ```
+
+# 拼接目录
+
+`path.Join`可以拼接目录，并且自动忽略多余的`/`：
+
+```go
+// 输出 data/rc
+fmt.Println(path.Join("data", "//rc"))
+```
