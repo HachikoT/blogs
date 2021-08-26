@@ -21,7 +21,29 @@ k8s全称kubernetes，kubernetes源于希腊语，意为“舵手”或“领航
 - **kubelet**：负责维护容器的生命周期，同时也负责Volume（CVI）和网络（CNI）的管理；
 - **kube-proxy**：负责为Service提供cluster内部的服务发现和负载均衡；
 
+# k8s挂载——emptyDir
+
+emptyDir类型的volume在pod分配到node上时被创建，这个目录的初始内容为空，当Pod从node上移除时，emptyDir中的数据会被永久删除。
+
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: redis
+spec:
+  containers:
+  - name: redis
+    image: redis
+    volumeMounts:
+    - name: redis-storage
+      mountPath: /data/redis
+  volumes:
+  - name: redis-storage
+    emptyDir: {}
+```
+
 # 参考资料
 
 - [Kubernetes 文档](https://kubernetes.io/zh/docs/home/)
 - [k8s](https://www.cnblogs.com/xy51/p/12744956.html)
+- [配置 Pod 以使用卷进行存储](https://kubernetes.io/zh/docs/tasks/configure-pod-container/configure-volume-storage/)
