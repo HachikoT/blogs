@@ -21,6 +21,13 @@ k8s全称kubernetes，kubernetes源于希腊语，意为“舵手”或“领航
 - **kubelet**：负责维护容器的生命周期，同时也负责Volume（CVI）和网络（CNI）的管理；
 - **kube-proxy**：负责为Service提供cluster内部的服务发现和负载均衡；
 
+# 在Docker与Kubernetes中指定可执行程序及其参数
+
+| docker | k8s | 含义 |
+| :---: | :---: | :---: |
+| ENTRYPOINT | command | 容器中运行的可执行文件 |
+| CMD | args | 传给可执行文件的参数 |
+
 # k8s挂载——emptyDir
 
 emptyDir类型的volume在pod分配到node上时被创建，这个目录的初始内容为空，当Pod从node上移除时，emptyDir中的数据会被永久删除。
