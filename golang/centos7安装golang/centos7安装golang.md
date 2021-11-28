@@ -31,6 +31,12 @@ export PATH=$PATH:/usr/local/go/bin
 go version go1.16.10 linux/amd64
 ```
 
+创建gopath目录。
+
+```bash
+mkdir -p ~/go/bin ~/go/src ~/go/pkg
+```
+
 # 参考资料
 
 - [Download Golang](https://golang.google.cn/dl/)
