@@ -1,4 +1,5 @@
-[toc]
+- [安装golang](#安装golang)
+- [参考资料](#参考资料)
 
 # 安装golang
 
