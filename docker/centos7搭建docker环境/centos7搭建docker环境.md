@@ -1,4 +1,13 @@
-[toc]
+- [安装docker](#安装docker)
+  - [卸载旧版本](#卸载旧版本)
+  - [添加yum仓库](#添加yum仓库)
+  - [安装](#安装)
+  - [启动服务](#启动服务)
+  - [将当前用户添加到docker用户组](#将当前用户添加到docker用户组)
+  - [修改镜像源](#修改镜像源)
+  - [hello-world测试](#hello-world测试)
+- [安装docker-compose](#安装docker-compose)
+- [参考资料](#参考资料)
 
 # 安装docker
 
