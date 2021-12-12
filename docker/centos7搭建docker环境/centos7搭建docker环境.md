@@ -62,6 +62,8 @@ sudo systemctl start docker
 
 ## 将当前用户添加到docker用户组
 
+执行完这一步之后需要退出登陆（logout），不然系统不刷新你已经在docker用户组了。
+
 ```bash
 sudo gpasswd -a ${USER} docker
 ```
