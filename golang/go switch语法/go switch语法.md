@@ -1,4 +1,5 @@
 - [switch语法](#switch语法)
+- [type switch](#type-switch)
 - [参考资料](#参考资料)
 
 # switch语法
@@ -67,6 +68,40 @@ func main() {
 }
 ```
 
+# type switch
+
+`type switch`是go语言中一种特殊的`switch`语法，它比较的是类型而不是具体的值。
+和普通的类型断言一样，要求进行断言的变量是接口类型的。并且在`type switch`中不允许使用`fallthrough`语句。
+
+```go
+	switch x.(type) {
+	case nil:
+		doSomeThing()
+	case Type1:
+		doSomeThing()
+	case Type2:
+		doSomeThing()
+	default:
+		doSomeThing()
+	}
+```
+
+为了方便进行类型转换，`type switch`还可以设定一个值来提前保存转换之后得到的值。
+
+```go
+	switch value := x.(type) {
+	case nil:
+		doSomeThing()
+	case Type1:
+		doSomeThing(value)
+	case Type2:
+		doSomeThing(value)
+	default:
+		doSomeThing(value)
+	}
+```
+
 # 参考资料
 
 - [Go 语言 switch 语句](https://www.runoob.com/go/go-switch-statement.html)
+- [Go 语言的 Type Switch 语句解析](https://blog.csdn.net/u012291393/article/details/79244424)
