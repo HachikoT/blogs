@@ -22,7 +22,9 @@ sudo tar -C /usr/local -xzf go1.16.10.linux-amd64.tar.gz
 设置环境变量`vi $HOME/.bash_profile`。
 
 ```bash
-export PATH=$PATH:/usr/local/go/bin
+export GOROOT=/usr/local/go
+export GOPATH=$HOME/go
+export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 ```
 
 重新登录刷新环境变量，测试`go version`，查看版本信息是否正确。
