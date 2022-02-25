@@ -3,6 +3,7 @@
 	- [包含中文的时候字符计数](#包含中文的时候字符计数)
 	- [遍历字符串](#遍历字符串)
 	- [截取字符串](#截取字符串)
+	- [字符串拼接优化](#字符串拼接优化)
 - [参考资料](#参考资料)
 
 # go字符串
@@ -101,6 +102,27 @@ func main() {
 	str := "hello world"
 	sub := str[0:5]
 	fmt.Println(sub) // hello
+}
+
+```
+
+## 字符串拼接优化
+
+大部分时候直接`+`起来就行，可能有的情况需要拼接的字符串太多，直接`+`起来生成太多临时对象和拷贝，可以用`string.Builder`对象来拼接，提升效率。
+
+```go
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+func main() {
+	var builder strings.Builder
+	builder.WriteString("hello")
+	builder.WriteString(" world")
+	fmt.Println(builder.String())
 }
 
 ```
