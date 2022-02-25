@@ -2,6 +2,7 @@
 	- [和`[]byte`相互转换](#和byte相互转换)
 	- [包含中文的时候字符计数](#包含中文的时候字符计数)
 	- [遍历字符串](#遍历字符串)
+	- [截取字符串](#截取字符串)
 - [参考资料](#参考资料)
 
 # go字符串
@@ -84,6 +85,24 @@ func main() {
 5  
 6 中
 9 国
+```
+
+## 截取字符串
+
+和切片和数组一样，字符串也可以通过下标截取。`str[low:high]`表示截取[low,high)范围的数据，low可以超过最大下标范围，但是high超过最大下标范围会抛出`panic`。
+
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	str := "hello world"
+	sub := str[0:5]
+	fmt.Println(sub) // hello
+}
+
 ```
 
 # 参考资料
