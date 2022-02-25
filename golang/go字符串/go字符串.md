@@ -1,6 +1,7 @@
 - [go字符串](#go字符串)
 	- [和`[]byte`相互转换](#和byte相互转换)
 	- [包含中文的时候字符计数](#包含中文的时候字符计数)
+	- [遍历字符串](#遍历字符串)
 - [参考资料](#参考资料)
 
 # go字符串
@@ -52,6 +53,37 @@ func main() {
 	fmt.Println(utf8.RuneCountInString(str)) // 8
 }
 
+```
+
+## 遍历字符串
+
+可以像遍历数组和切片那样遍历整个字符串，并且遍历的时候获取到的是每个字符的unicode码，也就是`rune`类型的变量。可以挨个得到中文字符的值。
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	str := "hello 中国"
+	for i, c := range str {
+		fmt.Println(i, string(c))
+	}
+}
+
+```
+
+输出如下。
+
+```bash
+0 h
+1 e
+2 l
+3 l
+4 o
+5  
+6 中
+9 国
 ```
 
 # 参考资料
