@@ -1,6 +1,6 @@
 - [资源限制](#资源限制)
   - [内存限制](#内存限制)
-- [CPU限制](#cpu限制)
+  - [CPU限制](#cpu限制)
 - [查看容器资源占用](#查看容器资源占用)
 - [参考资料](#参考资料)
 
@@ -10,7 +10,7 @@ docker提供了控制容器资源的功能。docker底层通过linux内核namesp
 
 ## 内存限制
 
-执行`docker run`命令时能使用的和内存限制相关的所有选项如下。
+执行`docker run`命令时能使用的和内存限制相关的选项如下。
 
 | 选项 | 说明 |
 | :--: | :--: |
@@ -26,9 +26,9 @@ docker提供了控制容器资源的功能。docker底层通过linux内核namesp
 
 `--memory-reservation`可以为容器设置内存软性限制，它不保证任何时刻容器使用的内存不会超过`--memory-reservation`限定的值，它只是确保容器不会长时间占用超过`--memory-reservation`限制的内存大小。在宿主机内存资源紧张时，系统会回收容器的部分内存页，强迫容器的内存占用回到`--memory-reservation`设置的值大小。
 
-# CPU限制
+## CPU限制
 
-执行`docker run`命令时能使用的和CPU限制相关的所有选项如下。
+执行`docker run`命令时能使用的和CPU限制相关的选项如下。
 
 | 选项 | 说明 |
 | :--: | :--: |
@@ -44,7 +44,7 @@ docker提供了控制容器资源的功能。docker底层通过linux内核namesp
 # 查看容器资源占用
 
 通过`docker stats`命令可以直接查看容器的内存，CPU，IO资源的占用情况。
-这里用stress镜像来压测一下，这里开启两个压测进程，会占用200%的CPU和512M内存。
+这里用stress镜像来压测一下，这里开启两个压测进程，会占用200%的CPU（2个CPU核）和512M内存。
 
 ```bash
 docker run -d --cpus 0.1 -m 1g  lorel/docker-stress-ng stress -vm 2
