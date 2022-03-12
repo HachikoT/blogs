@@ -1,11 +1,12 @@
-- [docker资源占用情况](#docker资源占用情况)
-- [镜像资源清理](#镜像资源清理)
-- [容器资源清理](#容器资源清理)
-- [数据卷和网络资源清理](#数据卷和网络资源清理)
-- [构建缓存清理](#构建缓存清理)
+- [docker资源占用情况查看](#docker资源占用情况查看)
+- [docker资源清理](#docker资源清理)
+  - [镜像资源清理](#镜像资源清理)
+  - [容器资源清理](#容器资源清理)
+  - [数据卷和网络资源清理](#数据卷和网络资源清理)
+  - [构建缓存清理](#构建缓存清理)
 - [参考资料](#参考资料)
 
-# docker资源占用情况
+# docker资源占用情况查看
 
 docker用久之后，会遇到磁盘占用越来越大的情况。这个时候可以用`docker system df`命令来查看docker的资源占用情况。
 
@@ -18,9 +19,11 @@ Local Volumes   1         1         219.5MB   0B (0%)
 Build Cache     0         0         0B        0B
 ```
 
-这里分别列出了docker中不同资源类型所占用的磁盘空间，其中的`Build Cache`表示平时构建镜像过程中产生的缓存数据，`RECLAIMABLE`表示当前可以回收的空间大小。
+这里分别列出了docker中不同资源类型所占用的磁盘空间，`RECLAIMABLE`表示当前该种类资源可以回收的空间大小。其中的`Build Cache`表示平时构建镜像过程中产生的缓存数据，往往是垃圾资源占用的大头。
 
-# 镜像资源清理
+# docker资源清理
+
+## 镜像资源清理
 
 `docker image prune`命令可以清理所有标签为`none`的镜像。
 
@@ -36,7 +39,7 @@ Are you sure you want to continue? [y/N]
 docker rmi $(docker images -f dangling=true -q)
 ```
 
-# 容器资源清理
+## 容器资源清理
 
 `docker container prune`命令可以清理所有停止运行的容器。
 
@@ -52,7 +55,7 @@ Are you sure you want to continue? [y/N]
 docker rm $(docker ps -f status=exited -q)
 ```
 
-# 数据卷和网络资源清理
+## 数据卷和网络资源清理
 
 数据卷资源清理。
 
@@ -70,7 +73,7 @@ WARNING! This will remove all custom networks not used by at least one container
 Are you sure you want to continue? [y/N]
 ```
 
-# 构建缓存清理
+## 构建缓存清理
 
 docker用久了，`Build Cache`那一项可能占据很大的空间，这时候可以用来清理无用的构建缓存。
 
