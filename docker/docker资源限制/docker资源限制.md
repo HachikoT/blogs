@@ -50,7 +50,7 @@ docker提供了控制容器资源的功能。docker底层通过linux内核namesp
 docker run -d --cpus 0.1 -m 1g  lorel/docker-stress-ng stress -vm 2
 ```
 
-然后可以通过`docker stats`命令看到容器的资源占用情况。
+然后可以通过`docker stats`命令看到容器的资源占用情况。可以看到CPU被限制到0.1个核，内存限制1GB所以没有影响。
 
 ```bash
 CONTAINER ID   NAME               CPU %     MEM USAGE / LIMIT   MEM %     NET I/O       BLOCK I/O    PIDS
