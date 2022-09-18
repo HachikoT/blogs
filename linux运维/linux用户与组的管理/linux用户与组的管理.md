@@ -4,6 +4,13 @@
   - [用户密码配置](#用户密码配置)
 - [用户管理](#用户管理)
   - [添加用户](#添加用户)
+  - [设置用户密码](#设置用户密码)
+  - [删除用户](#删除用户)
+- [群组管理](#群组管理)
+  - [添加群组](#添加群组)
+  - [将已有用户添加到指定用户组](#将已有用户添加到指定用户组)
+  - [将用户移除出用户组](#将用户移除出用户组)
+  - [删除群组](#删除群组)
 - [参考资料](#参考资料)
 
 # 用户与组的配置文件
@@ -16,36 +23,36 @@
 ## 用户配置信息
 
 ```bash
-rc@rc-virtual-machine:/home$ cat /etc/passwd
-rc:x:1000:1000:rc,,,:/home/rc:/bin/bash
+[rc@localhost ~]$ cat /etc/passwd | grep rc
+rc:x:1000:1000:rc:/home/rc:/bin/bash
 ```
 
 | 用户名 | 密码（实际存放在`/etc/shadow`中） | UID | GID | 全名或注释 | 家目录 | 默认使用的shell |
 | :--: | :--: | :--: | :--: | :--: | :--: | :--: |
-| rc | x | 1000 | 1000 | `rc,,,` | `/home/rc` | `/bin/bash` |
+| `rc` | `x` | `1000` | `1000` | `rc` | `/home/rc` | `/bin/bash` |
 
 ## 组配置信息
 
 ```bash
-rc@rc-virtual-machine:/home$ cat /etc/group
-rc:x:1000:
+[rc@localhost ~]$ cat /etc/group | grep rc
+wheel:x:10:rc
+rc:x:1000:rc
 ```
 
 | 组名 | 密码（实际存放在`/etc/gshadow`中） | GID | 附加用户 |
 | :--: | :--: | :--: | :--: |
-| rc | x | 1000 |  |
+| rc | x | 1000 | rc |
 
 ## 用户密码配置
 
 ```bash
-rc@rc-virtual-machine:/home$ sudo cat /etc/shadow
-[sudo] rc 的密码：
-rc:$6$qoOaCPosRISLl4Av$DRf6V5ABSQjFR3gJAOV6exJfNgiu.Y8dqg7yMJLZYaB4ftZrTXmv2.RYbHakWbRCRHl1UggjSwzNLHXS15UU10:18959:0:99999:7:::
+[rc@localhost ~]$ sudo cat /etc/shadow | grep rc
+rc:$6$zl9Q14oGB0htw4kt$bURziE3yg8YES8cMesq4t7jm1z88VJI6mJ2Zc13RKbeo0Gj6q2ZHXjEWWO/PTvASvl.gtwKElumvHYfde3Mnz/::0:99999:7:::
 ```
 
 | 用户名 | 加密密码 | 上一次更改密码的unix时间戳 | 再过几天可以更改（0表示随时可改） | 再过几天必须更改（99999表示永久） | 过期前几天提醒用户 | 过期多久账户将被锁定 | 多少天后账户失效 |
 | :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: |
-| rc | `$6$qoOaCPosRISLl4Av$DRf6V5ABSQjFR3gJAOV6exJfNgiu.Y8dqg7yMJLZYaB4ftZrTXmv2.RYbHakWbRCRHl1UggjSwzNLHXS15UU10` | 18959 | 0 | 99999 | 7 |  |  |
+| rc | `$6$qoOaCPosRISLl4Av$DRf6V5ABSQjFR3gJAOV6exJfNgiu.Y8dqg7yMJLZYaB4ftZrTXmv2.RYbHakWbRCRHl1UggjSwzNLHXS15UU10` |  | 0 | 99999 | 7 |  |  |
 
 # 用户管理
 
@@ -70,16 +77,135 @@ useradd [选项] 登录名
 示例。
 
 ```bash
-rc@rc-virtual-machine:/home$ sudo useradd -m -d /home/rctest rctest
-[sudo] rc 的密码： 
-rc@rc-virtual-machine:/home$ ll
-总用量 16
-drwxr-xr-x  4 root    root    4096 3月  14 12:26 ./
-drwxr-xr-x 20 root    root    4096 12月  3 23:07 ../
-drwxr-xr-x 31 rc      rc      4096 3月  12 14:46 rc/
-drwxr-xr-x  2 rctest  rctest  4096 3月  14 12:26 rctest/
+[rc@localhost ~]$ su root
+密码：
+[root@localhost rc]# useradd sj
+[root@localhost rc]# ll /home/
+总用量 0
+drwx------. 3 rc rc 108 9月  18 17:26 rc
+drwx------. 2 sj sj  62 9月  18 23:16 sj
+```
+
+## 设置用户密码
+
+用户创建好之后，还需要给它设置好密码。在这之前没法远程登陆该用户，也不能从普通用户切换到该用户。
+`passwd`命令用来修改用户的密码。
+
+```bash
+passwd [-k] [-l] [-u [-f]] [-d] [-e] [-n mindays] [-x maxdays] [-w warndays] [-i inactivedays] [-S] [--stdin] [username]
+```
+
+主要选项。
+
+- `-d`：删除密码。
+- `-f`：强迫用户下次登录时必须修改密码。
+- `-l`：停止账号使用。
+- `-u`：启用已被停止的账户。
+- `-n`：指定密码最短存活期。
+- `-x`：指定密码最长存活期。
+- `-w`：口令要到期提前警告的天数。
+- `-i`：口令过期后多少天停用账户。
+
+示例。
+
+```bash
+[rc@localhost ~]$ su root
+密码：
+[root@localhost home]# passwd sj
+更改用户 sj 的密码 。
+新的 密码：
+无效的密码： 密码是一个回文
+重新输入新的 密码：
+passwd：所有的身份验证令牌已经成功更新。
+[root@localhost home]# cat /etc/shadow | grep sj
+sj:$6$Tp8jw7fj$mrwLxbP6xF/smJsMtncjOkLA6y0WuatNYGBADsDxXPwsLIc7dwzYlLktzVhz5XOtDxFeZ863BXKWNz9rd0sbn1:19253:0:99999:7:::
+```
+
+## 删除用户
+
+通过`userdel`命令可以删除用户。
+
+```bash
+userdel [选项] 登录名
+```
+
+主要选项如下。
+
+- `-r`：用户主目录中的文件将随用户主目录和用户邮箱一起删除。
+
+示例。
+
+```bash
+[rc@localhost ~]$ su root
+密码：
+[root@localhost rc]# userdel -r sj
+[root@localhost rc]# cd ..
+[root@localhost home]# ll
+总用量 0
+drwx------. 3 rc rc 108 9月  18 17:26 rc
+```
+
+# 群组管理
+
+## 添加群组
+
+通过`groupadd`命令可以创建一个新群组。
+
+```bash
+groupadd [选项] 群组名
+```
+
+示例。
+
+```bash
+[rc@localhost home]$ su root
+密码：
+[root@localhost home]# groupadd good
+```
+
+## 将已有用户添加到指定用户组
+
+通过`usermod`命令可以增加用户的附加组信息。
+
+示例。
+
+```bash
+[rc@localhost home]$ su root
+密码：
+[root@localhost home]# usermod -a -G good rc
+[root@localhost home]# id rc
+uid=1000(rc) gid=1000(rc) 组=1000(rc),10(wheel),1002(good)
+```
+
+## 将用户移除出用户组
+
+通过`gpasswd`命令可以增删组成员信息。
+
+```bash
+gpasswd [选项] 群组名
+```
+
+常用选项。
+
+- `-a`：添加一个用户进组。
+- `-d`：将用户从组中删除。
+- `-M`：设置组成员列表。
+
+## 删除群组
+
+通过`groupdel`命令可以删除群组。
+
+示例。
+
+```bash
+[rc@localhost ~]$ su root
+密码：
+[root@localhost rc]# groupdel good
+[root@localhost rc]# id rc
+uid=1000(rc) gid=1000(rc) 组=1000(rc),10(wheel)
 ```
 
 # 参考资料
 
 - [Linux中用户与用户组管理](https://www.cnblogs.com/ddz-linux/p/10467106.html)
+- [Linux passwd命令](https://www.runoob.com/linux/linux-comm-passwd.html)
