@@ -22,7 +22,7 @@ sort [OPTION]... [FILE]...
 - `-f, --ignore-case`：忽略大小写进行比较。
 - `-n, --numeric-sort`：按照数字大小进行排序，默认是按字母顺序。
 - `-t, --field-separator=SEP`：设置分隔符。
-- `-k, --key=KEYDEF`：KEYDEF的格式为`FStart[.CStart][OPTS][,FEnd[.CEnd][OPTS]]`，表示从域`FStart`的第`CStart`个字符开始到域`FEnd`的第`Cend`个字符结尾作为排序的键值（key），可以设置多个key，就是多个`-k`选项。这里`OPTS`选项可以设置比较的选项，表示对于该键值key怎么样排序。
+- `-k, --key=KEYDEF`：KEYDEF的格式为`FStart[.CStart][OPTS][,FEnd[.CEnd][OPTS]]`，表示从域`FStart`的第`CStart`个字符开始到域`FEnd`的第`Cend`个字符结尾作为排序的键值（key），不写`FEnd`默认最后一个域，不写`CEnd`默认最后一个字符，可以设置多个key。这里`OPTS`选项可以设置比较的选项，表示对于该键值key怎么样排序。
 - `-u, --unique`：删除键值（key）重复的行。
 - `-r, --reverse`：逆序输出排序结果。
 
