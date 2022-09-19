@@ -25,6 +25,8 @@ echo [SHORT-OPTION]... [STRING]...
 这里强烈建议给`echo`命令加上`-n`参数，因为不带的话将把换行符也作为输入编码到base64字符串里面了。
 
 ```bash
+[rc@localhost ~]$ echo "secret" | base64
+c2VjcmV0Cg==
 [rc@localhost ~]$ echo -n "secret" | base64
 c2VjcmV0
 ```
