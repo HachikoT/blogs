@@ -1,11 +1,14 @@
 - [通配符](#通配符)
 - [花括号展开](#花括号展开)
 - [示例](#示例)
+  - [用`touch`一次创建多个文件。](#用touch一次创建多个文件)
+  - [用`ls`查看多种结尾模式的文件。](#用ls查看多种结尾模式的文件)
+  - [用`find`查找指定模式的文件。](#用find查找指定模式的文件)
 - [参考资料](#参考资料)
 
 # 通配符
 
-在linux中，shell在匹配文件的时候会去解析通用模式匹配符号。语法和正则表达式有区别。
+在linux中，shell在匹配文件的时候会去解析通用模式匹配符号，shell会将匹配到的真实文件路径替换到参数输入处。需要注意的是通配符的语法和正则表达式有很大的不同。
 
 | 通配符 | 含义 | 备注 |
 | :--: | :--: | :--: |
@@ -21,69 +24,72 @@
 
 # 花括号展开
 
-花括号扩展有时在别的书籍中也被称为大括号扩展，是可以让bash生成任意字符串的一种扩展功能。
+也被称为大括号扩展，是可以让bash生成组合字符串的一种扩展功能。shell会将生成的所有组合结果替换到参数输入处。
 
 | 格式 | 含义 |
 | :--: | :--: |
 | `{string1,string2,...,stringN}` | 可以展开为指定字符串模式 |
-| `{<START>..<END>[..<INCR>]}` | 可以自动生成指定的字符串模式 |
+| `{<START>..<END>[..<INCR>]}` | 可以自动生成指定的字符串模式，可以设置起始值，终止值，和每次增量值 |
 
 # 示例
 
-用`touch`一次创建多个文件。
+## 用`touch`一次创建多个文件。
 
 ```bash
-rc@rc-virtual-machine:~/tmp$ ll
-总用量 8
-drwxrwxr-x  2 rc rc 4096 3月  22 11:54 ./
-drwxr-xr-x 31 rc rc 4096 3月  20 15:11 ../
-rc@rc-virtual-machine:~/tmp$ touch test{01..10}
-rc@rc-virtual-machine:~/tmp$ ll
-总用量 8
-drwxrwxr-x  2 rc rc 4096 3月  22 11:54 ./
-drwxr-xr-x 31 rc rc 4096 3月  20 15:11 ../
--rw-rw-r--  1 rc rc    0 3月  22 11:54 test01
--rw-rw-r--  1 rc rc    0 3月  22 11:54 test02
--rw-rw-r--  1 rc rc    0 3月  22 11:54 test03
--rw-rw-r--  1 rc rc    0 3月  22 11:54 test04
--rw-rw-r--  1 rc rc    0 3月  22 11:54 test05
--rw-rw-r--  1 rc rc    0 3月  22 11:54 test06
--rw-rw-r--  1 rc rc    0 3月  22 11:54 test07
--rw-rw-r--  1 rc rc    0 3月  22 11:54 test08
--rw-rw-r--  1 rc rc    0 3月  22 11:54 test09
--rw-rw-r--  1 rc rc    0 3月  22 11:54 test10
+[rc@localhost work]$ touch text{01..10}
+[rc@localhost work]$ ll
+总用量 0
+-rw-rw-r--. 1 rc rc 0 9月  20 14:15 text01
+-rw-rw-r--. 1 rc rc 0 9月  20 14:15 text02
+-rw-rw-r--. 1 rc rc 0 9月  20 14:15 text03
+-rw-rw-r--. 1 rc rc 0 9月  20 14:15 text04
+-rw-rw-r--. 1 rc rc 0 9月  20 14:15 text05
+-rw-rw-r--. 1 rc rc 0 9月  20 14:15 text06
+-rw-rw-r--. 1 rc rc 0 9月  20 14:15 text07
+-rw-rw-r--. 1 rc rc 0 9月  20 14:15 text08
+-rw-rw-r--. 1 rc rc 0 9月  20 14:15 text09
+-rw-rw-r--. 1 rc rc 0 9月  20 14:15 text10
 ```
 
-用`ls`查看指定模式的文件。
+## 用`ls`查看多种结尾模式的文件。
+
+方法一。
 
 ```bash
-rc@rc-virtual-machine:~/tmp$ ll test@(01|10|11)
--rw-rw-r-- 1 rc rc 0 3月  22 11:54 test01
--rw-rw-r-- 1 rc rc 0 3月  22 11:54 test10
+[rc@localhost work]$ ll text@(01|10|11)
+-rw-rw-r--. 1 rc rc 0 9月  20 14:15 text01
+-rw-rw-r--. 1 rc rc 0 9月  20 14:15 text10
 ```
 
-用`find`查找指定模式的文件。
+方法二。
 
 ```bash
-rc@rc-virtual-machine:~/tmp$ find . -name "test0[4-5]"
-./test04
-./test05
+[rc@localhost work]$ ll text{01,10,11}
+ls: 无法访问text11: 没有那个文件或目录
+-rw-rw-r--. 1 rc rc 0 9月  20 14:15 text01
+-rw-rw-r--. 1 rc rc 0 9月  20 14:15 text10
 ```
 
-但是`find`不支持`extglob`，所以没法查询多种字符串模式，需要手动加`-o`参数写多个条件。
+## 用`find`查找指定模式的文件。
 
 ```bash
-rc@rc-virtual-machine:~/tmp$ touch test.{log,txt}
-rc@rc-virtual-machine:~/tmp$ ll
-总用量 8
-drwxrwxr-x  2 rc rc 4096 3月  22 11:58 ./
-drwxr-xr-x 31 rc rc 4096 3月  20 15:11 ../
--rw-rw-r--  1 rc rc    0 3月  22 11:58 test.log
--rw-rw-r--  1 rc rc    0 3月  22 11:58 test.txt
-rc@rc-virtual-machine:~/tmp$ find . -name "test.@(log|txt)"
-rc@rc-virtual-machine:~/tmp$ find . -name "test.log" -o -name "test.txt"
-./test.txt
-./test.log
+[rc@localhost work]$ find . -name "text0[4-5]"
+./text04
+./text05
+```
+
+但是`find`不支持`extglob`，所以没法查询多种字符串模式，需要手动加`-or`参数写多个条件。
+
+```bash
+[rc@localhost work]$ touch text.{log,txt}
+[rc@localhost work]$ ll
+总用量 0
+-rw-rw-r--. 1 rc rc 0 9月  20 14:20 text.log
+-rw-rw-r--. 1 rc rc 0 9月  20 14:20 text.txt
+[rc@localhost work]$ find . -name "text.@(log|txt)"
+[rc@localhost work]$ find . -name "text.log" -or -name "text.txt"
+./text.log
+./text.txt
 ```
 
 # 参考资料
