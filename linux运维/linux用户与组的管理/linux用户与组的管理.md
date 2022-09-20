@@ -77,13 +77,14 @@ useradd [选项] 登录名
 示例。
 
 ```bash
-[rc@localhost ~]$ su root
+[rc@localhost ~]$ su - root
 密码：
-[root@localhost rc]# useradd sj
-[root@localhost rc]# ll /home/
+上一次登录：二 9月 20 22:36:24 CST 2022pts/0 上
+[root@localhost ~]# useradd sj
+[root@localhost ~]# ll /home/
 总用量 0
-drwx------. 3 rc rc 108 9月  18 17:26 rc
-drwx------. 2 sj sj  62 9月  18 23:16 sj
+drwxr-xr-x. 5 rc rc 119 9月  20 21:44 rc
+drwx------. 2 sj sj  62 9月  20 23:00 sj
 ```
 
 ## 设置用户密码
@@ -107,18 +108,20 @@ passwd [-k] [-l] [-u [-f]] [-d] [-e] [-n mindays] [-x maxdays] [-w warndays] [-i
 - `-i, --inactive`：口令过期后多少天停用账户。
 
 示例。
+这里不用管无效密码的提示，本机测试就随便写了个简单密码，也是ok的。
 
 ```bash
-[rc@localhost ~]$ su root
+[rc@localhost ~]$ su - root
 密码：
-[root@localhost home]# passwd sj
+上一次登录：二 9月 20 22:55:13 CST 2022pts/0 上
+[root@localhost ~]# passwd sj
 更改用户 sj 的密码 。
 新的 密码：
 无效的密码： 密码是一个回文
 重新输入新的 密码：
 passwd：所有的身份验证令牌已经成功更新。
-[root@localhost home]# cat /etc/shadow | grep sj
-sj:$6$Tp8jw7fj$mrwLxbP6xF/smJsMtncjOkLA6y0WuatNYGBADsDxXPwsLIc7dwzYlLktzVhz5XOtDxFeZ863BXKWNz9rd0sbn1:19253:0:99999:7:::
+[root@localhost ~]# cat /etc/shadow | grep sj
+sj:$6$NaKyZB6D$/aARF1As5dk4BD5QdYHUet8qLtDyA90wJpqXDnuTmJUIx4ugFXAjfPXGXBIO.mXWUmX4oLyr2RHN/nWiuOD3a1:19255:0:99999:7:::
 ```
 
 ## 删除用户
@@ -136,13 +139,13 @@ userdel [选项] 登录名
 示例。
 
 ```bash
-[rc@localhost ~]$ su root
+[rc@localhost ~]$ su - root
 密码：
-[root@localhost rc]# userdel -r sj
-[root@localhost rc]# cd ..
-[root@localhost home]# ll
+上一次登录：二 9月 20 23:01:54 CST 2022pts/0 上
+[root@localhost ~]# userdel -r sj
+[root@localhost ~]# ll /home/
 总用量 0
-drwx------. 3 rc rc 108 9月  18 17:26 rc
+drwxr-xr-x. 5 rc rc 119 9月  20 21:44 rc
 ```
 
 # 组管理
@@ -158,9 +161,12 @@ groupadd [选项] 组名
 示例。
 
 ```bash
-[rc@localhost home]$ su root
+[rc@localhost ~]$ su - root
 密码：
-[root@localhost home]# groupadd good
+上一次登录：二 9月 20 23:04:09 CST 2022pts/0 上
+[root@localhost ~]# groupadd good
+[root@localhost ~]# cat /etc/group | grep good
+good:x:1001:
 ```
 
 ## 将已有用户添加到指定组
@@ -175,11 +181,12 @@ groupadd [选项] 组名
 示例。
 
 ```bash
-[rc@localhost home]$ su root
+[rc@localhost ~]$ su - root
 密码：
-[root@localhost home]# usermod -a -G good rc
-[root@localhost home]# id rc
-uid=1000(rc) gid=1000(rc) 组=1000(rc),10(wheel),1002(good)
+上一次登录：二 9月 20 23:05:57 CST 2022pts/0 上
+[root@localhost ~]# usermod -a -G good rc
+[root@localhost ~]# id rc
+uid=1000(rc) gid=1000(rc) 组=1000(rc),10(wheel),1001(good)
 ```
 
 ## 将用户移除出组
@@ -196,6 +203,18 @@ gpasswd [选项] 组名
 - `-d, --delete`：将用户从组中删除。
 - `-M, --members`：设置组成员列表，逗号分隔。
 
+示例。
+
+```bash
+[rc@localhost ~]$ su - root
+密码：
+上一次登录：二 9月 20 23:07:59 CST 2022pts/0 上
+[root@localhost ~]# gpasswd -d rc good
+正在将用户“rc”从“good”组中删除
+[root@localhost ~]# id rc
+uid=1000(rc) gid=1000(rc) 组=1000(rc),10(wheel)
+```
+
 ## 删除组
 
 通过`groupdel`命令可以删除组。
@@ -203,11 +222,14 @@ gpasswd [选项] 组名
 示例。
 
 ```bash
-[rc@localhost ~]$ su root
+[rc@localhost ~]$ cat /etc/group | grep good
+good:x:1001:
+[rc@localhost ~]$ su - root
 密码：
-[root@localhost rc]# groupdel good
-[root@localhost rc]# id rc
-uid=1000(rc) gid=1000(rc) 组=1000(rc),10(wheel)
+上一次登录：二 9月 20 23:10:56 CST 2022pts/0 上
+[root@localhost ~]# groupdel good
+[root@localhost ~]# cat /etc/group | grep good
+[root@localhost ~]#
 ```
 
 # 参考资料
