@@ -1,2 +1,0 @@
-- href是Hypertext Reference的缩写。意思是指定超链接目标的URL。
-- head 中的 title 元素必选的元素; 其他元数据元素是可选的。
