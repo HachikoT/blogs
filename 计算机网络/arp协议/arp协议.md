@@ -10,7 +10,7 @@
 
 # ARP协议
 
-ARP（Address Resolution Protocol）地址解析协议，用于实现从IP地址到MAC地址的映射，可以根据对方的IP地址查询到对方的MAC地址。
+ARP（Address Resolution Protocol）地址解析协议，用于实现从IP地址到MAC地址的映射，可以根据对方的IP地址查询到对方的MAC地址（同一网段内）。
 整个ARP协议交互过程仅需要两个包，一问一答即可搞定。
 
 # ARP报文格式
