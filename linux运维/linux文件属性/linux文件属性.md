@@ -1,6 +1,8 @@
 - [linux文件属性](#linux文件属性)
   - [文件类型](#文件类型)
   - [文件权限](#文件权限)
+    - [文件默认权限](#文件默认权限)
+    - [修改文件默认权限](#修改文件默认权限)
   - [文件时间属性](#文件时间属性)
   - [有效用户和有效群组](#有效用户和有效群组)
 - [参考资料](#参考资料)
@@ -72,6 +74,8 @@ drwxr-xr-x  14 root root       4096 8月  19  2021 var/
 |   文件   |             文件可读             |                     文件可写                     |         文件可执行         |
 |   目录   | 目录可读（可以查看目录下的文件） | 目录可写（可以增删目录下的文件，可以重命名目录） | 目录可执行（可以进入目录） |
 
+### 文件默认权限
+
 `umask`表示新建文件或者目录的时候用来屏蔽初始权限的掩码。
 创建文件和目录的时候默认的权限不一样：
 
@@ -81,33 +85,49 @@ drwxr-xr-x  14 root root       4096 8月  19  2021 var/
 初始权限再去除`umask`指定的权限就得到新建目录或者文件实际的权限了。
 
 ```bash
-rc@rc-virtual-machine:~/tmp$ umask
+[rc@localhost work]$ umask
 0002
-rc@rc-virtual-machine:~/tmp$ touch file1
-rc@rc-virtual-machine:~/tmp$ mkdir dir1
-rc@rc-virtual-machine:~/tmp$ ll
-总用量 12
-drwxrwxr-x  3 rc rc 4096 2月  27 14:44 ./
-drwxr-xr-x 28 rc rc 4096 2月  27 14:44 ../
-drwxrwxr-x  2 rc rc 4096 2月  27 14:44 dir1/
--rw-rw-r--  1 rc rc    0 2月  27 14:44 file1
+[rc@localhost work]$ touch text1
+[rc@localhost work]$ mkdir dir1
+[rc@localhost work]$ ll
+总用量 0
+drwxrwxr-x. 2 rc rc 6 9月  23 10:24 dir1
+-rw-rw-r--. 1 rc rc 0 9月  23 10:24 text1
 ```
 
-修改`umask`的值可以修改`~/.bashrc`文件添加`umask xxxx`即可。
+可以看到文件和目录的`others`中的写权限`w`都被`umask`屏蔽掉了。
+
+### 修改文件默认权限
+
+- 临时修改：直接在命令行输入`umask xxxx`即可.
+- 永久修改：可以在`/etc/profile`文件添加`umask xxxx`即可。
+
+还可以根据不同用户类型来设置不同的`umask`值，下面就是centos7中`/etc/profile`自带的设置。
+
+```bash
+if [ $UID -gt 199 ] && [ "`/usr/bin/id -gn`" = "`/usr/bin/id -un`" ]; then
+    # 普通用户，uid>=200
+    umask 002
+else
+    # 系统用户，uid<200
+    umask 022
+fi
+```
 
 ## 文件时间属性
 
 用`stat`命令可以查看文件详细的时间属性。
 
 ```bash
-rc@rc-virtual-machine:~/tmp$ stat file1 
-  文件：file1
-  大小：0         	块：0          IO 块：4096   普通空文件
-设备：805h/2053d	Inode：1051847     硬链接：1
+[rc@localhost work]$ stat text1
+  文件："text1"
+  大小：0               块：0          IO 块：4096   普通空文件
+设备：fd00h/64768d      Inode：67487003    硬链接：1
 权限：(0664/-rw-rw-r--)  Uid：( 1000/      rc)   Gid：( 1000/      rc)
-最近访问：2022-02-27 14:44:17.960612250 +0800
-最近更改：2022-02-27 14:44:17.960612250 +0800
-最近改动：2022-02-27 14:44:17.960612250 +0800
+环境：unconfined_u:object_r:user_home_t:s0
+最近访问：2022-09-23 10:24:51.687207891 +0800
+最近更改：2022-09-23 10:24:51.687207891 +0800
+最近改动：2022-09-23 10:24:51.687207891 +0800
 创建时间：-
 ```
 
@@ -117,7 +137,7 @@ rc@rc-virtual-machine:~/tmp$ stat file1
 - 最近内容修改时间（modification time）（mtime）：文件写入的时候会更新，比如`vi`命令修改文件。
 - 最近状态修改时间（change time）（ctime）：文件属性变化的时候会更新，比如`chmod`命令修改文件属性。
 
-`touch`命令默认会修改这三种时间属性。
+`touch`命令默认会更新这三种时间属性。
 
 ## 有效用户和有效群组
 
