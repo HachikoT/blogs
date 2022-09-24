@@ -6,17 +6,20 @@
 
 # MAC地址
 
-MAC地址（Media Access Control），即媒体访问控制地址，在不同的使用场景下有不同的别名，比如局域网地址（LAN Address）,以太网地址（Ethernet Address），物理地址（Physical Address），硬件地址（Hardware Address）等。<br>
+MAC地址（Media Access Control），即媒体访问控制地址，在不同的使用场景下有不同的别名，比如局域网地址（LAN Address）,以太网地址（Ethernet Address），物理地址（Physical Address），硬件地址（Hardware Address）等。
+
 MAC地址作用于数据链路层，用来在局域网中唯一标识一个网络设备接口。网络设备制造商在生产时会根据规则将全球唯一的MAC地址烧录到硬件中。
 
 ## MAC地址格式
 
-MAC地址的长度为6字节，48比特。除去组播的，本地的MAC地址，差不多还有70万亿个地址可以使用，随便用。<br>
+MAC地址的长度为6字节，48比特。除去组播的，本地的MAC地址，差不多还有70万亿个地址可以使用，随便用。
+
 MAC地址一般用冒分十六进制表示，比如`58:A0:23:27:B6:31`。6字节长的MAC地址可以划分为两部分，前3字节为oui（organizationally unique identifier），为IEEE的注册管理机构统一分配（出售）给各个网络设备生产商的编码。后3字节就由拥有该oui的厂家自己分配了。每一个oui可以对应1400w+的MAC地址，大公司往往拥有成百上千个oui，比如去[oui与厂商对应表](https://standards-oui.ieee.org/oui/oui.txt)搜索一下huawei就可以得到上千条结果。
 
 ![mac-addr](mac-addr.png)
 
-MAC地址的第1个字节中还有两个标志位，`b0`位表示单播地址还是组播地址（unicast/multicast），`b1`位表示全局地址还是本地地址（global/local）。<br>
+MAC地址的第1个字节中还有两个标志位，`b0`位表示单播地址还是组播地址（unicast/multicast），`b1`位表示全局地址还是本地地址（global/local）。
+
 广播MAC地址`ff:ff:ff:ff:ff:ff`算是特殊的组播地址。本地MAC地址一般用于系统随机生成MAC地址。
 
 ## 查看MAC地址
@@ -35,7 +38,8 @@ MAC地址的第1个字节中还有两个标志位，`b0`位表示单播地址还
 
 ## 修改MAC地址
 
-在一些场景，比如不希望暴露自己的真实MAC地址，或者MAC地址被网络管理员限制了。那么可以手动去修改MAC地址。只需要保证你的MAC地址在局域网内唯一就行。<br>
+在一些场景，比如不希望暴露自己的真实MAC地址，或者MAC地址被网络管理员限制了。那么可以手动去修改MAC地址。只需要保证你的MAC地址在局域网内唯一就行。
+
 可以用`ip link set DEVICE address LLADDR`命令临时修改网卡的MAC地址，这里我们将`ens33`网卡的MAC地址最后一位由`6b`改为`6c`。
 
 ```bash
