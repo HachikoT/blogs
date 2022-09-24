@@ -6,7 +6,7 @@
 
 # MAC地址
 
-MAC地址（Media Access Control），即媒体访问控制地址，在不同的使用场景下有不同的别名，比如局域网地址（LAN Address）,以太网地址（Ethernet Address），物理地址（Physical Address），硬件地址（Hardware Address）等。
+MAC地址（Media Access Control），即媒介访问控制地址，在不同的使用场景下有不同的别名，比如局域网地址（LAN Address）,以太网地址（Ethernet Address），物理地址（Physical Address），硬件地址（Hardware Address）等。
 
 MAC地址作用于数据链路层，用来在局域网中唯一标识一个网络设备接口。网络设备制造商在生产时会根据规则将全球唯一的MAC地址烧录到硬件中。
 
