@@ -90,13 +90,15 @@ ARP高效运行的关键是维护一个本地的ARP缓存表，里面可以保�
 
 ## 为什么有很多ARP请求不是广播帧
 
+![unicast-arp-request](unicast-arp-request.png)
+
 ARP缓存表在删除过期的条目的时候，会尝试发送一个单播ARP请求到表中记录的MAC地址处，如果短时间内没有回复再删除，如果回复了就更新状态。
 
 还有就是当ARP缓存处于`STALE`状态时，如果某一条目被使用，那么状态会更新为`DELAY`，同时发送单播ARP请求到该条目指定的MAC地址处，如果对方回复了，那么直接更新为`REACHABLE`，从而很大程度降低了广播的次数。
 
 下图就展示了linux内核代码中对ARP缓存状态转移的优化设计。
 
-![unicast-arp-request](unicast-arp-request.png)
+![arp-stat](arp-stat.png)
 
 ## 免费ARP
 
