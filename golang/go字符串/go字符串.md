@@ -4,6 +4,8 @@
 	- [遍历字符串](#遍历字符串)
 	- [截取字符串](#截取字符串)
 	- [字符串拼接优化](#字符串拼接优化)
+	- [不区分大小写操作](#不区分大小写操作)
+	- [分割字符串](#分割字符串)
 - [参考资料](#参考资料)
 
 # go字符串
@@ -125,6 +127,68 @@ func main() {
 	builder.WriteString("hello")
 	builder.WriteString(" world")
 	fmt.Println(builder.String())
+}
+
+```
+
+## 不区分大小写操作
+
+可以用`ToUpper`和`ToLower`进行大小写转换，用`EqualFold`进行忽略大小写的比较。
+
+```go
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+func main() {
+	fmt.Println(strings.ToUpper("Hello"))            // HELLO
+	fmt.Println(strings.ToLower("Hello"))            // hello
+	fmt.Println(strings.EqualFold("hello", "Hello")) // true
+}
+
+```
+
+## 分割字符串
+
+可以用`Split`函数指定分隔符来分割，但是`Split`不能压缩连续的分隔符，并且也不能指定多种分隔符。
+
+```go
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+func main() {
+	strs := strings.Split("hello world", " ")
+	fmt.Printf("%#v\n", strs) // []string{"hello", "world"}
+	strs = strings.Split("hello  world", " ")
+	fmt.Printf("%#v\n", strs) // []string{"hello", "", "world"}
+}
+
+```
+
+可以用`FeildsFunc`函数，这样可以压缩连续的分割符，也支持多种分隔符，但是分隔符只能是字符，而不能是字符串了。
+
+并且语义方面也有点不同，`FeildsFunc`会忽略长度为0的字段。
+
+```go
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+func main() {
+	strs := strings.Split("hello  world  ", " ")
+	fmt.Printf("%#v\n", strs) // []string{"hello", "", "world", "", ""}
+	strs = strings.FieldsFunc("hello  world  ", func(c rune) bool { return c == ' ' })
+	fmt.Printf("%#v\n", strs) // []string{"hello", "world"}
 }
 
 ```
