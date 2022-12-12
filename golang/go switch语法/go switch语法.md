@@ -73,34 +73,81 @@ func main() {
 
 `type switch`是go语言中一种特殊的`switch`语法，它比较的是类型而不是具体的值。
 
-和普通的类型断言一样，要求进行断言的变量是接口类型的。并且在`type switch`中不允许使用`fallthrough`语句。
+和普通的类型断言一样，要求进行断言的变量必须是接口类型的。并且在`type switch`中不允许使用`fallthrough`语句。
 
 ```go
+package main
+
+import (
+	"fmt"
+)
+
+type person struct {
+	age  int
+	name string
+}
+
+func guessType(x interface{}) {
+	value := x.(person)
+	fmt.Println(value)
 	switch x.(type) {
-	case nil:
-		doSomeThing()
-	case Type1:
-		doSomeThing()
-	case Type2:
-		doSomeThing()
+	case int:
+		fmt.Println("int")
+	case string:
+		fmt.Println("string")
+	case person:
+		fmt.Println("person")
 	default:
-		doSomeThing()
+		fmt.Println("unknown")
 	}
+}
+
+func main() {
+	var n int
+	var str string
+	var p person
+	guessType(n)   // int
+	guessType(str) // string
+	guessType(p)   // person
+}
 ```
 
 为了方便进行类型转换，`type switch`还可以设定一个值来提前保存转换之后得到的值。
 
 ```go
+package main
+
+import (
+	"fmt"
+)
+
+type person struct {
+	age  int
+	name string
+}
+
+func guessType(x interface{}) {
 	switch value := x.(type) {
-	case nil:
-		doSomeThing()
-	case Type1:
-		doSomeThing(value)
-	case Type2:
-		doSomeThing(value)
+	case int:
+		fmt.Println("int ", value)
+	case string:
+		fmt.Println("string ", value)
+	case person:
+		fmt.Println("person ", value)
 	default:
-		doSomeThing(value)
+		fmt.Println("unknown ", value)
 	}
+}
+
+func main() {
+	var n int
+	var str string = "hello"
+	var p person
+	guessType(n)   // int 0
+	guessType(str) // string hello
+	guessType(p)   // person {0 }
+	guessType(nil) // person <nil>
+}
 ```
 
 # 参考资料
