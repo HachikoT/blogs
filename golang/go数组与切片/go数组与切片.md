@@ -18,12 +18,12 @@
 
 ## 初始化
 
-| 方式 | 代码示例 |
-| :-: | :-: |
-| 默认值初始化，所有元素为默认值 | `var arr [10]int` |
-| 字面值初始化 | `var arr = [3]int{1, 2, 3}` |
-| 也可以自动推导数组长度 | `var arr = [...]int{1, 2, 3}` |
-| 指定特定元素的值，其余元素还是默认值 | `var arr = [3]int{2: 1}` |
+|                 方式                 |           代码示例            |
+| :----------------------------------: | :---------------------------: |
+|    默认值初始化，所有元素为默认值    |       `var arr [10]int`       |
+|             字面值初始化             |  `var arr = [3]int{1, 2, 3}`  |
+|        也可以自动推导数组长度        | `var arr = [...]int{1, 2, 3}` |
+| 指定特定元素的值，其余元素还是默认值 |   `var arr = [3]int{2: 1}`    |
 
 ## 访问不存在的元素会panic
 
@@ -68,11 +68,11 @@ func main() {
 
 ## 初始化
 
-| 方式 | 代码示例 |
-| :-: | :-: |
-| 默认初始化为`nil` | `var slice []int` |
-| 字面值，相当于从数组中截取 | `slice := []int{1, 2, 3}` |
-| `make` | `slice := make([]int, len, cap)` |
+|                   方式                   |             代码示例              |
+| :--------------------------------------: | :-------------------------------: |
+|            默认初始化为`nil`             |         `var slice []int`         |
+|        字面值，相当于从数组中截取        |     `slice := []int{1, 2, 3}`     |
+|                  `make`                  | `slice := make([]int, len, cap)`  |
 | 从数组中截取，表示截取[startIdx, endIdx) | `slice := array[startIdx:endIdx]` |
 | 从切片中截取，表示截取[startIdx, endIdx) | `slice := slice[startIdx:endIdx]` |
 
@@ -93,6 +93,48 @@ func main() {
 	var ns []int
 	fmt.Println(ns == nil) // true
 }
+```
+
+对于`[]byte`类型切片，可以利用`bytes.Equal`函数来比较。
+
+```go
+package main
+
+import (
+	"bytes"
+	"fmt"
+)
+
+func main() {
+	b1 := []byte{1, 2, 3}
+	b2 := []byte{1, 2, 3}
+	b3 := []byte{4, 5, 6}
+
+	fmt.Println(bytes.Equal(b1, b2)) // true
+	fmt.Println(bytes.Equal(b1, b3)) // false
+}
+
+```
+
+对于其他类型的切片，也可以利用`reflect.DeepEqual`来实现。
+
+```go
+package main
+
+import (
+	"fmt"
+	"reflect"
+)
+
+func main() {
+	b1 := []int{1, 2, 3}
+	b2 := []int{1, 2, 3}
+	b3 := []int{4, 5, 6}
+
+	fmt.Println(reflect.DeepEqual(b1, b2)) // true
+	fmt.Println(reflect.DeepEqual(b1, b3)) // false
+}
+
 ```
 
 ## nil切片和空切片
