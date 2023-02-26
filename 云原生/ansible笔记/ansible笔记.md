@@ -9,7 +9,8 @@
   - [ansible.cfg配置文件](#ansiblecfg配置文件)
   - [命令行模式操作（ad-hoc模式）](#命令行模式操作ad-hoc模式)
   - [常用模块](#常用模块)
-    - [ping](#ping)
+    - [ping模块](#ping模块)
+    - [setup模块](#setup模块)
     - [copy](#copy)
     - [fetch](#fetch)
     - [file](#file)
@@ -247,7 +248,7 @@ ansible [pattern] -m [module] -a "[module options]"
 
 可以用`ansible-doc -s ping`命令查看具体模块的详细说明。
 
-### ping
+### ping模块
 
 `ping`一下被控主机，如果可以通过ansible成功连接，那么返回`pong`。
 
@@ -260,6 +261,30 @@ SSH password:
     },
     "changed": false,
     "ping": "pong"
+}
+```
+
+### setup模块
+
+用于收集被控主机的信息。`setup`的参数如下：
+
+- `filter`：对返回的主机信息进行过滤，支持shell通配符，仅展示匹配到的信息。
+  - `ansible_architecture`：显示机器架构，比如x86，x86_64。
+  - `ansible_distribution`：显示是什么发行版，例如centos，ubuntu。
+  - `ansible_distribution_major_version`：发行版主版本号。
+  - `ansible_hostname`：主机名。
+  - `ansible_kernel`：内核信息。
+  - `ansible_memory_mb`：显示内存数据。
+
+```bash
+[rc@cos201 hello-ansible]$ ansible all -m setup -a "filter=ansible_distribution"
+SSH password:
+192.168.135.203 | SUCCESS => {
+    "ansible_facts": {
+        "ansible_distribution": "CentOS",
+        "discovered_interpreter_python": "/usr/bin/python"
+    },
+    "changed": false
 }
 ```
 
