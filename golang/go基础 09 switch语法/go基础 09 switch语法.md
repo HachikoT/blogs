@@ -1,8 +1,8 @@
-- [switch语法](#switch语法)
+- [switch](#switch)
 - [type switch](#type-switch)
 - [参考资料](#参考资料)
 
-# switch语法
+# switch
 
 在go中，`switch`可以支持传入各种类型进行选择，相当于从第1个`case`到最后一个`case`遍历进行比较，执行最先满足条件的`case`。
 
@@ -50,7 +50,7 @@ func main() {
 }
 ```
 
-可以不传入参数，替代繁琐的`if else`写法。这里每个`case`挨个判断，进入最先满足条件的`case`执行。
+可以不传入参数，替代`if else`写法。这里每个`case`挨个判断，进入最先满足条件的`case`执行。
 
 ```go
 func main() {
@@ -88,8 +88,6 @@ type person struct {
 }
 
 func guessType(x interface{}) {
-	value := x.(person)
-	fmt.Println(value)
 	switch x.(type) {
 	case int:
 		fmt.Println("int")
@@ -146,7 +144,7 @@ func main() {
 	guessType(n)   // int 0
 	guessType(str) // string hello
 	guessType(p)   // person {0 }
-	guessType(nil) // person <nil>
+	guessType(nil) // unknown <nil>
 }
 ```
 
