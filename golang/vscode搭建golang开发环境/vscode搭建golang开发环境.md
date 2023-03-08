@@ -27,7 +27,7 @@ go插件提供了代码高亮，补全，跳转，格式化等功能。
 
 ```bash
 go env -w GO111MODULE="on"
-go env -w GOPROXY=https://goproxy.io
+go env -w GOPROXY=https://goproxy.cn
 ```
 
 然后重新点击`install All`即可成功（如果是ubuntu环境，有的工具依赖gcc，所以需要先安装好gcc）。
