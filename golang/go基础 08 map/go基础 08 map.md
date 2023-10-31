@@ -1,17 +1,19 @@
 - [go map](#go-map)
 	- [map初始化](#map初始化)
 	- [增加数据](#增加数据)
+	- [map的元素无法取址](#map的元素无法取址)
 	- [遍历数据](#遍历数据)
 	- [判断kv是否存在](#判断kv是否存在)
 
 # go map
 
-`map`是一种无序的键值对的集合，可以通过key来快速检索数据。`map`是无序的，我们无法决定它的返回顺序，这是因为`map`的底层是使用哈希表来实现的。
+`map`是一种键值对的集合，可以通过key来快速检索数据。`map`是无序的，我们无法决定它的返回顺序，这是因为`map`的底层是使用哈希表来实现的。
 
-`map`中的key类型必须是comparable的，也就是可以通过`==`和`!=`运算符相互比较。
+`map`中的key类型必须是可比较的，也就是可以通过`==`和`!=`运算符比较。
 
-- 支持`==`运算符的类型：`bool`，数值类型，`string`，指针，`channel`，以及包含它们的接口，数组和结构体。
-- 不支持`==`运算符的类型：`slice`，`map`，`func`类型都不能相互比较，只能和`nil`比较。
+|                                  可比较类型                                   |     不可比较类型      |
+| :---------------------------------------------------------------------------: | :-------------------: |
+| `bool`，数值类型，`string`，指针，`channel`，以及包含它们的接口，数组和结构体 | 切片，`map`，函数类型 |
 
 ## map初始化
 
@@ -24,7 +26,7 @@ m := map[string]string{
     "russia": "moscow",
 }
 
-// 用make初始化，size可以忽略，那么map会申请少量的内存作为初始空间
+// 用make初始化，size可以忽略，如果忽略map会申请少量的内存作为初始空间
 m := make(map[string]string, size)
 ```
 
@@ -38,6 +40,47 @@ m["china"] = "beijing"
 m["russia"] = "moscow"
 
 fmt.Println(m["china"]) // 输出 beijing
+```
+
+## map的元素无法取址
+
+直接取地址会编译报错。
+
+```go
+m := make(map[string]string)
+m["china"] = "beijing"
+
+// invalid operation: cannot take address of m["china"]
+fmt.Println(&m["china"])
+```
+
+所以要修改一个已经存在的map元素，只能重新给它赋值
+
+```go
+m := make(map[string]string)
+m["china"] = "beijing"
+
+fmt.Println(m["china"]) // beijing
+
+m["china"] = "shanghai"
+
+fmt.Println(m["china"]) // shanghai
+```
+
+如果map的元素是结构体，可以直接通过元素直接获取字段的值，但是没办法设置字段的值（会编译报错）。
+
+```go
+type person struct{
+	name string
+}
+
+m := make(map[string]person)
+m["rc"] = person{"rc"}
+
+fmt.Println(m["rc"].name) // rc
+
+// cannot assign to struct field m["rc"].name in map
+m["rc"].name = "rc2"
 ```
 
 ## 遍历数据
