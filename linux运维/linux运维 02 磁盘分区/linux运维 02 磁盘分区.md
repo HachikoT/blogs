@@ -22,13 +22,16 @@
 - 引导标志：80H表示活动分区，00H表示非活动分区。
 - 类型标志
 
-| 类型标志 |      说明      |
-| :------: | :------------: |
-|   83H    |  Linux nature  |
-|   85H    | Linux extended |
+| 类型标志 |        说明         |
+| :------: | :-----------------: |
+|   0fH    | LBA寻址模式extended |
+|   83H    |    Linux nature     |
+|   85H    |   Linux extended    |
+|   8eH    |      Linux lvm      |
 
 - 分区起始扇区号：最大只能计算到2TB，所以MBR最大只支持2TB的磁盘分区。并且需要考虑扇区对齐，因为物理扇区的大小不一定等于逻辑扇区的大小，所以要让划分的逻辑扇区和物理扇区对齐，linux和window中默认对齐扇区数为2048（一般为1MB）。
 
 # 参考资料
 
+- [磁盘MBR分区理解](https://blog.csdn.net/lijiewen2017/article/details/123903780)
 - [分区4K对齐那些事](https://www.diskgenius.cn/exp/about-4k-alignment.php)
