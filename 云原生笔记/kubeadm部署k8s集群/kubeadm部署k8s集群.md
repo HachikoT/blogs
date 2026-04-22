@@ -1,5 +1,10 @@
 - [kubeadm init](#kubeadm-init)
-  - [certs](#certs)
+	- [certs](#certs)
+	- [kubeconfig](#kubeconfig)
+	- [etcd](#etcd)
+	- [control-plane](#control-plane)
+	- [kubelet-start](#kubelet-start)
+	- [wait-control-plane](#wait-control-plane)
 - [kubeadm join](#kubeadm-join)
 - [参考资料](#参考资料)
 
@@ -90,6 +95,16 @@ localAPIEndpoint:                                        # apiserver监听地址
   advertiseAddress: ""
   bindPort: 6443
 certificateKey: ""                                       # 用来加密上传到kubeadm-certs secret中的证书密钥的AES密钥
+# patches:
+#   directory:
+timeouts:
+  controlPlaneComponentHealthCheck: 4m                   # 等待控制平面pod ready的时间
+  kubeletHealthCheck: 4m                                 # 等待kubelet ready的时间
+  kubernetesAPICall: 1m                                  # kubeadm访问apiserver接口的超时时间
+  etcdAPICall: 2m                                        # kubeadm访问etcd接口的超时时间
+  tlsBootstrap: 5m                                       # kubelet完成tls启动的超时时间
+  discovery: 5m                                          # kubeadm验证apiserver实体超时时间
+  upgradeManifests: 5m                                   # 更新静态pod static的超时时间
 ---
 apiVersion: kubeadm.k8s.io/v1beta4
 kind: ClusterConfiguration
@@ -98,10 +113,10 @@ etcd:
     imageRepository: ""                                  # etcd镜像仓库名
     imageTag: ""                                         # etcd镜像tag名
     dataDir: "/var/lib/etcd"                             # etcd数据目录
-    extraArgs:
-    extraEnvs:
-    serverCertSANs:
-    peerCertSANs:
+    extraArgs: []
+    extraEnvs: []
+    serverCertSANs: []
+    peerCertSANs: []
   # external:
   #   endpoints:
   #   caFile:
@@ -122,6 +137,7 @@ dns:
 proxy:
   disabled: false                                        # 是否禁用kube-proxy插件
 ImageRepository: "registry.k8s.io"                       # 镜像仓库名
+clusterName: "kubernetes"                                # 集群名称
 encryptionAlgorithm: "RSA-2048"                          # 生成证书密钥时使用的加密算法
 certificateValidityPeriod: "8760h"                       # 生成证书的有效期（1年）
 caCertificateValidityPeriod: "87600h"                    # 生成ca证书的有效期（10年）
@@ -478,6 +494,228 @@ func CreateServiceAccountKeyAndPublicKeyFiles(certsDir string, keyType kubeadmap
 
 	return pkiutil.WritePublicKey(certsDir, kubeadmconstants.ServiceAccountKeyBaseName, key.Public())
 }
+```
+
+## kubeconfig
+
+生成`admin.conf`，`super-admin.conf`，`kubelet.conf`，`controller-manager.conf`，`scheduler.conf`
+
+```go
+func getKubeConfigSpecsBase(cfg *kubeadmapi.InitConfiguration) (map[string]*kubeConfigSpec, error) {
+	// apiserver的集群访问地址和本地访问地址
+	controlPlaneEndpoint, err := kubeadmutil.GetControlPlaneEndpoint(cfg.ControlPlaneEndpoint, &cfg.LocalAPIEndpoint)
+	if err != nil {
+		return nil, err
+	}
+	localAPIEndpoint, err := kubeadmutil.GetLocalAPIEndpoint(&cfg.LocalAPIEndpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	startTime := kubeadmutil.StartTimeUTC()
+	notAfter := startTime.Add(kubeadmconstants.CertificateValidityPeriod) // "8760h"（1年）
+	if cfg.ClusterConfiguration.CertificateValidityPeriod != nil {
+		notAfter = startTime.Add(cfg.ClusterConfiguration.CertificateValidityPeriod.Duration)
+	}
+
+	return map[string]*kubeConfigSpec{
+		kubeadmconstants.AdminKubeConfigFileName: {
+			APIServer:  controlPlaneEndpoint,
+			ClientName: "kubernetes-admin",
+			ClientCertAuth: &clientCertAuth{
+				Organizations: []string{kubeadmconstants.ClusterAdminsGroupAndClusterRoleBinding}, // "kubeadm:cluster-admins"
+			},
+			ClientCertNotAfter:  notAfter,
+			EncryptionAlgorithm: cfg.ClusterConfiguration.EncryptionAlgorithmType(),
+		},
+		kubeadmconstants.SuperAdminKubeConfigFileName: {
+			APIServer:  controlPlaneEndpoint,
+			ClientName: "kubernetes-super-admin",
+			ClientCertAuth: &clientCertAuth{
+				Organizations: []string{kubeadmconstants.SystemPrivilegedGroup}, // "system:masters"
+			},
+			ClientCertNotAfter:  notAfter,
+			EncryptionAlgorithm: cfg.ClusterConfiguration.EncryptionAlgorithmType(),
+		},
+		kubeadmconstants.KubeletKubeConfigFileName: {
+			APIServer:  controlPlaneEndpoint,
+			ClientName: fmt.Sprintf("%s%s", kubeadmconstants.NodesUserPrefix, cfg.NodeRegistration.Name), // "system:node:"
+			ClientCertAuth: &clientCertAuth{
+				Organizations: []string{kubeadmconstants.NodesGroup}, // "system:nodes"
+			},
+			ClientCertNotAfter:  notAfter,
+			EncryptionAlgorithm: cfg.ClusterConfiguration.EncryptionAlgorithmType(),
+		},
+		kubeadmconstants.ControllerManagerKubeConfigFileName: {
+			APIServer:           localAPIEndpoint,
+			ClientName:          kubeadmconstants.ControllerManagerUser, // "system:kube-controller-manager"
+			ClientCertAuth:      &clientCertAuth{},
+			ClientCertNotAfter:  notAfter,
+			EncryptionAlgorithm: cfg.ClusterConfiguration.EncryptionAlgorithmType(),
+		},
+		kubeadmconstants.SchedulerKubeConfigFileName: {
+			APIServer:           localAPIEndpoint,
+			ClientName:          kubeadmconstants.SchedulerUser, // "system:kube-scheduler"
+			ClientCertAuth:      &clientCertAuth{},
+			ClientCertNotAfter:  notAfter,
+			EncryptionAlgorithm: cfg.ClusterConfiguration.EncryptionAlgorithmType(),
+		},
+	}, nil
+}
+```
+
+## etcd
+
+生成etcd静态pod的yaml文件
+
+```go
+// GetEtcdPodSpec returns the etcd static Pod actualized to the context of the current configuration
+// NB. GetEtcdPodSpec methods holds the information about how kubeadm creates etcd static pod manifests.
+func GetEtcdPodSpec(cfg *kubeadmapi.ClusterConfiguration, endpoint *kubeadmapi.APIEndpoint, nodeName string, initialCluster []etcdutil.Member) v1.Pod {
+	pathType := v1.HostPathDirectoryOrCreate
+	etcdMounts := map[string]v1.Volume{
+		etcdVolumeName:  staticpodutil.NewVolume(etcdVolumeName, cfg.Etcd.Local.DataDir, &pathType),
+		certsVolumeName: staticpodutil.NewVolume(certsVolumeName, cfg.CertificatesDir+"/etcd", &pathType),
+	}
+	componentHealthCheckTimeout := kubeadmapi.GetActiveTimeouts().ControlPlaneComponentHealthCheck
+
+	// probeHostname returns the correct localhost IP address family based on the endpoint AdvertiseAddress
+	probeHostname, probePort, probeScheme := staticpodutil.GetEtcdProbeEndpoint(&cfg.Etcd, utilsnet.IsIPv6String(endpoint.AdvertiseAddress))
+	return staticpodutil.ComponentPod(
+		v1.Container{
+			Name:            kubeadmconstants.Etcd,
+			Command:         getEtcdCommand(cfg, endpoint, nodeName, initialCluster),
+			Image:           images.GetEtcdImage(cfg),
+			ImagePullPolicy: v1.PullIfNotPresent,
+			// Mount the etcd datadir path read-write so etcd can store data in a more persistent manner
+			VolumeMounts: []v1.VolumeMount{
+				staticpodutil.NewVolumeMount(etcdVolumeName, cfg.Etcd.Local.DataDir, false),
+				staticpodutil.NewVolumeMount(certsVolumeName, cfg.CertificatesDir+"/etcd", false),
+			},
+			Resources: v1.ResourceRequirements{
+				Requests: v1.ResourceList{
+					v1.ResourceCPU:    resource.MustParse("100m"),
+					v1.ResourceMemory: resource.MustParse("100Mi"),
+				},
+			},
+			// The etcd probe endpoints are explained here:
+			// https://github.com/kubernetes/kubeadm/issues/3039
+			LivenessProbe:  staticpodutil.LivenessProbe(probeHostname, "/livez", probePort, probeScheme),
+			ReadinessProbe: staticpodutil.ReadinessProbe(probeHostname, "/readyz", probePort, probeScheme),
+			StartupProbe:   staticpodutil.StartupProbe(probeHostname, "/readyz", probePort, probeScheme, componentHealthCheckTimeout),
+			Env:            kubeadmutil.MergeKubeadmEnvVars(cfg.Etcd.Local.ExtraEnvs),
+		},
+		etcdMounts,
+		// etcd will listen on the advertise address of the API server, in a different port (2379)
+		map[string]string{kubeadmconstants.EtcdAdvertiseClientUrlsAnnotationKey: etcdutil.GetClientURL(endpoint)},
+	)
+}
+```
+
+## control-plane
+
+生成`kube-apiserver`，`kube-controller-manager`，`kube-scheduler`
+
+```go
+// GetStaticPodSpecs returns all staticPodSpecs actualized to the context of the current configuration
+// NB. this method holds the information about how kubeadm creates static pod manifests.
+func GetStaticPodSpecs(cfg *kubeadmapi.ClusterConfiguration, endpoint *kubeadmapi.APIEndpoint, proxyEnvs []kubeadmapi.EnvVar) map[string]v1.Pod {
+	// Get the required hostpath mounts
+	mounts := getHostPathVolumesForTheControlPlane(cfg)
+	if proxyEnvs == nil {
+		proxyEnvs = kubeadmutil.GetProxyEnvVars()
+	}
+	componentHealthCheckTimeout := kubeadmapi.GetActiveTimeouts().ControlPlaneComponentHealthCheck
+
+	// Prepare static pod specs
+	staticPodSpecs := map[string]v1.Pod{
+		kubeadmconstants.KubeAPIServer: staticpodutil.ComponentPod(v1.Container{
+			Name:            kubeadmconstants.KubeAPIServer,
+			Image:           images.GetKubernetesImage(kubeadmconstants.KubeAPIServer, cfg),
+			ImagePullPolicy: v1.PullIfNotPresent,
+			Command:         getAPIServerCommand(cfg, endpoint),
+			VolumeMounts:    staticpodutil.VolumeMountMapToSlice(mounts.GetVolumeMounts(kubeadmconstants.KubeAPIServer)),
+			LivenessProbe:   staticpodutil.LivenessProbe(staticpodutil.GetAPIServerProbeAddress(endpoint), "/livez", endpoint.BindPort, v1.URISchemeHTTPS),
+			ReadinessProbe:  staticpodutil.ReadinessProbe(staticpodutil.GetAPIServerProbeAddress(endpoint), "/readyz", endpoint.BindPort, v1.URISchemeHTTPS),
+			StartupProbe:    staticpodutil.StartupProbe(staticpodutil.GetAPIServerProbeAddress(endpoint), "/livez", endpoint.BindPort, v1.URISchemeHTTPS, componentHealthCheckTimeout),
+			Resources:       staticpodutil.ComponentResources("250m"),
+			Env:             kubeadmutil.MergeKubeadmEnvVars(proxyEnvs, cfg.APIServer.ExtraEnvs),
+		}, mounts.GetVolumes(kubeadmconstants.KubeAPIServer),
+			map[string]string{kubeadmconstants.KubeAPIServerAdvertiseAddressEndpointAnnotationKey: endpoint.String()}),
+		kubeadmconstants.KubeControllerManager: staticpodutil.ComponentPod(v1.Container{
+			Name:            kubeadmconstants.KubeControllerManager,
+			Image:           images.GetKubernetesImage(kubeadmconstants.KubeControllerManager, cfg),
+			ImagePullPolicy: v1.PullIfNotPresent,
+			Command:         getControllerManagerCommand(cfg),
+			VolumeMounts:    staticpodutil.VolumeMountMapToSlice(mounts.GetVolumeMounts(kubeadmconstants.KubeControllerManager)),
+			LivenessProbe:   staticpodutil.LivenessProbe(staticpodutil.GetControllerManagerProbeAddress(cfg), "/healthz", kubeadmconstants.KubeControllerManagerPort, v1.URISchemeHTTPS),
+			StartupProbe:    staticpodutil.StartupProbe(staticpodutil.GetControllerManagerProbeAddress(cfg), "/healthz", kubeadmconstants.KubeControllerManagerPort, v1.URISchemeHTTPS, componentHealthCheckTimeout),
+			Resources:       staticpodutil.ComponentResources("200m"),
+			Env:             kubeadmutil.MergeKubeadmEnvVars(proxyEnvs, cfg.ControllerManager.ExtraEnvs),
+		}, mounts.GetVolumes(kubeadmconstants.KubeControllerManager), nil),
+		kubeadmconstants.KubeScheduler: staticpodutil.ComponentPod(v1.Container{
+			Name:            kubeadmconstants.KubeScheduler,
+			Image:           images.GetKubernetesImage(kubeadmconstants.KubeScheduler, cfg),
+			ImagePullPolicy: v1.PullIfNotPresent,
+			Command:         getSchedulerCommand(cfg),
+			VolumeMounts:    staticpodutil.VolumeMountMapToSlice(mounts.GetVolumeMounts(kubeadmconstants.KubeScheduler)),
+			LivenessProbe:   staticpodutil.LivenessProbe(staticpodutil.GetSchedulerProbeAddress(cfg), "/healthz", kubeadmconstants.KubeSchedulerPort, v1.URISchemeHTTPS),
+			StartupProbe:    staticpodutil.StartupProbe(staticpodutil.GetSchedulerProbeAddress(cfg), "/healthz", kubeadmconstants.KubeSchedulerPort, v1.URISchemeHTTPS, componentHealthCheckTimeout),
+			Resources:       staticpodutil.ComponentResources("100m"),
+			Env:             kubeadmutil.MergeKubeadmEnvVars(proxyEnvs, cfg.Scheduler.ExtraEnvs),
+		}, mounts.GetVolumes(kubeadmconstants.KubeScheduler), nil),
+	}
+	return staticPodSpecs
+}
+```
+
+## kubelet-start
+
+生成`/var/lib/kubelet/kubeadm-flags.env`，用来给kubelet传递启动参数
+
+```go
+// WriteKubeletDynamicEnvFile writes an environment file with dynamic flags to the kubelet.
+// Used at "kubeadm init" and "kubeadm join" time.
+func WriteKubeletDynamicEnvFile(cfg *kubeadmapi.ClusterConfiguration, nodeReg *kubeadmapi.NodeRegistrationOptions, registerTaintsUsingFlags bool, kubeletDir string) error {
+	flagOpts := kubeletFlagsOpts{
+		nodeRegOpts:              nodeReg,
+		pauseImage:               images.GetPauseImage(cfg),
+		registerTaintsUsingFlags: registerTaintsUsingFlags,
+	}
+	stringMap := buildKubeletArgs(flagOpts)
+	argList := kubeadmutil.ArgumentsToCommand(stringMap, nodeReg.KubeletExtraArgs)
+	envFileContent := fmt.Sprintf("%s=%q\n", constants.KubeletEnvFileVariableName, strings.Join(argList, " "))
+
+	return writeKubeletFlagBytesToDisk([]byte(envFileContent), kubeletDir)
+}
+```
+
+生成`/var/lib/kubelet/config.yaml`
+
+```go
+// writeConfigBytesToDisk writes a byte slice down to disk at the specific location of the kubelet config file
+func writeConfigBytesToDisk(b []byte, kubeletDir string) error {
+	configFile := filepath.Join(kubeletDir, kubeadmconstants.KubeletConfigurationFileName)
+	fmt.Printf("[kubelet-start] Writing kubelet configuration to file %q\n", configFile)
+
+	// creates target folder if not already exists
+	if err := os.MkdirAll(kubeletDir, 0700); err != nil {
+		return errors.Wrapf(err, "failed to create directory %q", kubeletDir)
+	}
+
+	if err := os.WriteFile(configFile, b, 0644); err != nil {
+		return errors.Wrapf(err, "failed to write kubelet configuration to the file %q", configFile)
+	}
+	return nil
+}
+```
+
+## wait-control-plane
+
+等待控制平面ready
+
+```go
+
 ```
 
 # kubeadm join
