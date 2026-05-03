@@ -389,34 +389,24 @@ KubeadmCert{
 }
 ```
 
+![kubeadm_init_certs](kubeadm_init_certs.png)
+
 ## kubeconfig
 
 生成`admin.conf`，`super-admin.conf`，`kubelet.conf`，`controller-manager.conf`，`scheduler.conf`
 
 ```go
 func getKubeConfigSpecsBase(cfg *kubeadmapi.InitConfiguration) (map[string]*kubeConfigSpec, error) {
-	// apiserver的集群访问地址和本地访问地址
-	controlPlaneEndpoint, err := kubeadmutil.GetControlPlaneEndpoint(cfg.ControlPlaneEndpoint, &cfg.LocalAPIEndpoint)
-	if err != nil {
-		return nil, err
-	}
-	localAPIEndpoint, err := kubeadmutil.GetLocalAPIEndpoint(&cfg.LocalAPIEndpoint)
-	if err != nil {
-		return nil, err
-	}
-
-	startTime := kubeadmutil.StartTimeUTC()
-	notAfter := startTime.Add(kubeadmconstants.CertificateValidityPeriod) // "8760h"（1年）
-	if cfg.ClusterConfiguration.CertificateValidityPeriod != nil {
-		notAfter = startTime.Add(cfg.ClusterConfiguration.CertificateValidityPeriod.Duration)
-	}
-
+	...
+	// 生成kubeconfig文件的配置，里面会包含ca的证书，客户端证书密钥
+	// 访问apiserver的配置优先使用controlplane地址，没有则使用本地apiserver地址
+	// 权限区分靠证书中写入不同的预置Organizations
 	return map[string]*kubeConfigSpec{
 		kubeadmconstants.AdminKubeConfigFileName: {
 			APIServer:  controlPlaneEndpoint,
 			ClientName: "kubernetes-admin",
 			ClientCertAuth: &clientCertAuth{
-				Organizations: []string{kubeadmconstants.ClusterAdminsGroupAndClusterRoleBinding}, // "kubeadm:cluster-admins"
+				Organizations: []string{kubeadmconstants.ClusterAdminsGroupAndClusterRoleBinding},         // "kubeadm:cluster-admins"
 			},
 			ClientCertNotAfter:  notAfter,
 			EncryptionAlgorithm: cfg.ClusterConfiguration.EncryptionAlgorithmType(),
@@ -425,30 +415,30 @@ func getKubeConfigSpecsBase(cfg *kubeadmapi.InitConfiguration) (map[string]*kube
 			APIServer:  controlPlaneEndpoint,
 			ClientName: "kubernetes-super-admin",
 			ClientCertAuth: &clientCertAuth{
-				Organizations: []string{kubeadmconstants.SystemPrivilegedGroup}, // "system:masters"
+				Organizations: []string{kubeadmconstants.SystemPrivilegedGroup},                           // "system:masters"
 			},
 			ClientCertNotAfter:  notAfter,
 			EncryptionAlgorithm: cfg.ClusterConfiguration.EncryptionAlgorithmType(),
 		},
 		kubeadmconstants.KubeletKubeConfigFileName: {
 			APIServer:  controlPlaneEndpoint,
-			ClientName: fmt.Sprintf("%s%s", kubeadmconstants.NodesUserPrefix, cfg.NodeRegistration.Name), // "system:node:"
+			ClientName: fmt.Sprintf("%s%s", kubeadmconstants.NodesUserPrefix, cfg.NodeRegistration.Name),  // "system:node:"
 			ClientCertAuth: &clientCertAuth{
-				Organizations: []string{kubeadmconstants.NodesGroup}, // "system:nodes"
+				Organizations: []string{kubeadmconstants.NodesGroup},                                      // "system:nodes"
 			},
 			ClientCertNotAfter:  notAfter,
 			EncryptionAlgorithm: cfg.ClusterConfiguration.EncryptionAlgorithmType(),
 		},
 		kubeadmconstants.ControllerManagerKubeConfigFileName: {
 			APIServer:           localAPIEndpoint,
-			ClientName:          kubeadmconstants.ControllerManagerUser, // "system:kube-controller-manager"
+			ClientName:          kubeadmconstants.ControllerManagerUser,                                   // "system:kube-controller-manager"
 			ClientCertAuth:      &clientCertAuth{},
 			ClientCertNotAfter:  notAfter,
 			EncryptionAlgorithm: cfg.ClusterConfiguration.EncryptionAlgorithmType(),
 		},
 		kubeadmconstants.SchedulerKubeConfigFileName: {
 			APIServer:           localAPIEndpoint,
-			ClientName:          kubeadmconstants.SchedulerUser, // "system:kube-scheduler"
+			ClientName:          kubeadmconstants.SchedulerUser,                                           // "system:kube-scheduler"
 			ClientCertAuth:      &clientCertAuth{},
 			ClientCertNotAfter:  notAfter,
 			EncryptionAlgorithm: cfg.ClusterConfiguration.EncryptionAlgorithmType(),
@@ -456,6 +446,8 @@ func getKubeConfigSpecsBase(cfg *kubeadmapi.InitConfiguration) (map[string]*kube
 	}, nil
 }
 ```
+
+![kubeadm_init_kubeconfig](kubeadm_init_kubeconfig.png)
 
 ## etcd
 
