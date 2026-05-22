@@ -1,7 +1,10 @@
 - [系统信息（System Info）](#系统信息system-info)
 - [cpu和内存信息](#cpu和内存信息)
+- [参考资料](#参考资料)
 
 # 系统信息（System Info）
+
+通过cadvisor获取Machine ID、System UUID、Boot ID、Kernel Version、OS Image的值
 
 - **Machine ID**：是一个持久固定的机器标识，如果文件不存在且系统使用 systemd，启动时会自动生成（systemd-machine-id-setup）
 - **System UUID**：（或称 SMBIOS UUID / DMI UUID）是写入固件（BIOS/UEFI）的硬件标识符，由主板制造商在生产时烧录，通常不可更改
@@ -107,6 +110,8 @@ func KernelVersion() string {
 
 # cpu和内存信息
 
+通过cadvisor获取Capacity的cpu、memory、hugePages的值，并通过减去SystemReserved，KubeReserved，evictionReservation的值获取Allocatable的值
+
 ```go
 // kubernetes/pkg/kubelet/nodestatus/setters.go
 
@@ -146,7 +151,8 @@ func MachineInfo(
 				node.Status.Capacity[rName] = rCap
 			}
 		...
-		// Allocatable是通过Capacity减去SystemReserved，KubeReserved，evictionReservation的值获取的
+		// Allocatable.cpu和Allocatable.hugePages是通过Capacity减去SystemReserved，KubeReserved的值获取的
+		// Allocatable.memory是通过Capacity减去SystemReserved，KubeReserved，evictionReservation的值获取的，其中evictionReservation的默认值是100Mi
 		allocatableReservation := nodeAllocatableReservationFunc()
 		for k, v := range node.Status.Capacity {
 			value := v.DeepCopy()
@@ -200,3 +206,6 @@ func Info(sysFs sysfs.SysFs, fsInfo fs.FsInfo, inHostNamespace bool) (*info.Mach
 }
 ```
 
+# 参考资料
+
+- [为系统守护进程预留计算资源](https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/reserve-compute-resources/)
