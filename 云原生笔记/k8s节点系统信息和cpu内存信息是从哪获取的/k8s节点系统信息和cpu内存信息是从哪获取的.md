@@ -1,10 +1,11 @@
 - [系统信息（System Info）](#系统信息system-info)
 - [cpu和内存信息](#cpu和内存信息)
+- [ephemeral-storage临时存储信息](#ephemeral-storage临时存储信息)
 - [参考资料](#参考资料)
 
 # 系统信息（System Info）
 
-通过cadvisor获取Machine ID、System UUID、Boot ID、Kernel Version、OS Image的值
+通过cadvisor获取`Machine ID`、`System UUID`、`Boot ID`、`Kernel Version`、`OS Image`的值
 
 - **Machine ID**：是一个持久固定的机器标识，如果文件不存在且系统使用 systemd，启动时会自动生成（systemd-machine-id-setup）
 - **System UUID**：（或称 SMBIOS UUID / DMI UUID）是写入固件（BIOS/UEFI）的硬件标识符，由主板制造商在生产时烧录，通常不可更改
@@ -110,30 +111,10 @@ func KernelVersion() string {
 
 # cpu和内存信息
 
-通过cadvisor获取Capacity的cpu、memory、hugePages的值，并通过减去SystemReserved，KubeReserved，evictionReservation的值获取Allocatable的值
+通过cadvisor获取`Capacity`的`cpu`、`memory`、`hugePages`的值，并通过减去`SystemReserved`，`KubeReserved`，`evictionReservation`的值获取`Allocatable`的值
 
 ```go
 // kubernetes/pkg/kubelet/nodestatus/setters.go
-
-func CapacityFromMachineInfo(info *cadvisorapi.MachineInfo) v1.ResourceList {
-	c := v1.ResourceList{
-		v1.ResourceCPU: *resource.NewMilliQuantity(
-			int64(info.NumCores*1000),
-			resource.DecimalSI),
-		v1.ResourceMemory: *resource.NewQuantity(
-			int64(info.MemoryCapacity),
-			resource.BinarySI),
-	}
-
-	for _, hugepagesInfo := range info.HugePages {
-		pageSizeBytes := int64(hugepagesInfo.PageSize * 1024)
-		hugePagesBytes := pageSizeBytes * int64(hugepagesInfo.NumPages)
-		pageSizeQuantity := resource.NewQuantity(pageSizeBytes, resource.BinarySI)
-		c[v1helper.HugePageResourceName(*pageSizeQuantity)] = *resource.NewQuantity(hugePagesBytes, resource.BinarySI)
-	}
-
-	return c
-}
 
 func MachineInfo(
 	...
@@ -152,7 +133,7 @@ func MachineInfo(
 			}
 		...
 		// Allocatable.cpu和Allocatable.hugePages是通过Capacity减去SystemReserved，KubeReserved的值获取的
-		// Allocatable.memory是通过Capacity减去SystemReserved，KubeReserved，evictionReservation的值获取的，其中evictionReservation的默认值是100Mi
+		// Allocatable.memory是通过Capacity减去SystemReserved，KubeReserved，evictionReservation的值获取的，其中evictionReservation的默认值是100Mi（memory.available）
 		allocatableReservation := nodeAllocatableReservationFunc()
 		for k, v := range node.Status.Capacity {
 			value := v.DeepCopy()
@@ -203,6 +184,61 @@ func Info(sysFs sysfs.SysFs, fsInfo fs.FsInfo, inHostNamespace bool) (*info.Mach
 	}
 	...
 	return machineInfo, nil
+}
+```
+
+# ephemeral-storage临时存储信息
+
+通过cadvisor获取`Capacity.ephemeral-storage`的值，其大小为`/var/lib/kubelet`目录所属块设备大小，并通过减去`SystemReserved`，`KubeReserved`，`evictionReservation`的值获取`Allocatable.ephemeral-storage`
+
+```go
+// kubernetes/pkg/kubelet/nodestatus/setters.go
+
+func MachineInfo(
+	...
+	capacityFunc func(localStorageCapacityIsolation bool) v1.ResourceList, // typically Kubelet.containerManager.GetCapacity
+	...
+	localStorageCapacityIsolation bool,                                    // typically true
+) Setter {
+	return func(ctx context.Context, node *v1.Node) error {
+		...
+			// 从cadvisor获取Capacity.ephemeral-storage
+			initialCapacity := capacityFunc(localStorageCapacityIsolation)
+			if initialCapacity != nil {
+				if v, exists := initialCapacity[v1.ResourceEphemeralStorage]; exists {
+					node.Status.Capacity[v1.ResourceEphemeralStorage] = v
+				}
+			}
+		...
+		// Allocatable.ephemeral-storage是通过Capacity减去SystemReserved，KubeReserved，evictionReservation的值获取的，其中evictionReservation的默认值是10%（nodefs.available）
+		allocatableReservation := nodeAllocatableReservationFunc()
+		for k, v := range node.Status.Capacity {
+			value := v.DeepCopy()
+			if res, exists := allocatableReservation[k]; exists {
+				value.Sub(res)
+			}
+			...
+			node.Status.Allocatable[k] = value
+		}
+		...
+		return nil
+	}
+}
+```
+
+```go
+// kubernetes/pkg/kubelet/cm/container_manager_linux.go
+
+func (cm *containerManagerImpl) GetCapacity(localStorageCapacityIsolation bool) v1.ResourceList {
+	if localStorageCapacityIsolation {
+		...
+				// 这里是查询的/var/lib/kubelet目录所在块设备的大小作为Capacity.ephemeral-storage
+				rootfs, err := cm.cadvisorInterface.RootFsInfo()
+				...
+				capacityWithEphemeralStorage[v1.ResourceEphemeralStorage] = cadvisor.EphemeralStorageCapacityFromFsInfo(rootfs)[v1.ResourceEphemeralStorage]
+		...
+	}
+	return cm.capacity
 }
 ```
 
